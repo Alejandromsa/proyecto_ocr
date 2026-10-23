@@ -1,0 +1,1708 @@
+{
+  "resumen": {
+    "documentos": 135,
+    "con_alteracion": 11,
+    "recall_alteraciones": 1.0,
+    "documentos_limpios": 124,
+    "limpios_con_falso_positivo": 0,
+    "clasificados": 135,
+    "rut_extraido_igual_carpeta": 135,
+    "campos_promedio": 6.0,
+    "latencia_p50_s": 2.44,
+    "latencia_p95_s": 3.39
+  },
+  "detalle": [
+    {
+      "archivo": "12794536-5/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "12794536-5",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "12794536-5/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [
+        "pdf.fuentes_mezcladas_campo"
+      ],
+      "hallado": [
+        "pdf.fuentes_mezcladas_campo"
+      ],
+      "rut_extraido": "12794536-5",
+      "campos": 6,
+      "acierto": [
+        "pdf.fuentes_mezcladas_campo"
+      ],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "12794536-5/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "12794536-5",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "12794536-5/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [
+        "pdf.texto_superpuesto"
+      ],
+      "hallado": [
+        "pdf.objeto_tapa_texto",
+        "pdf.texto_superpuesto"
+      ],
+      "rut_extraido": "12794536-5",
+      "campos": 6,
+      "acierto": [
+        "pdf.texto_superpuesto"
+      ],
+      "omitido": [],
+      "extra": [
+        "pdf.objeto_tapa_texto"
+      ],
+      "errores": []
+    },
+    {
+      "archivo": "12794536-5/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "12794536-5",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "12794536-5/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "12794536-5",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "13857120-3/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "13857120-3",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "13857120-3/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "13857120-3",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "13857120-3/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "13857120-3",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "13857120-3/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "13857120-3",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "13857120-3/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "13857120-3",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "13857120-3/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "13857120-3",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "14365092-8/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "14365092-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "14365092-8/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "14365092-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "14365092-8/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "14365092-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "14365092-8/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "14365092-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "14365092-8/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "14365092-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "14365092-8/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "14365092-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "14982307-7/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "14982307-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "14982307-7/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "14982307-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "14982307-7/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "14982307-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "14982307-7/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "14982307-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "14982307-7/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "14982307-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "14982307-7/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "14982307-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "15419663-3/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "15419663-3",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "15419663-3/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "15419663-3",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "15419663-3/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "15419663-3",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "15419663-3/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [
+        "pdf.texto_superpuesto"
+      ],
+      "hallado": [
+        "pdf.objeto_tapa_texto",
+        "pdf.texto_superpuesto"
+      ],
+      "rut_extraido": "15419663-3",
+      "campos": 6,
+      "acierto": [
+        "pdf.texto_superpuesto"
+      ],
+      "omitido": [],
+      "extra": [
+        "pdf.objeto_tapa_texto"
+      ],
+      "errores": []
+    },
+    {
+      "archivo": "15419663-3/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "15419663-3",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "15419663-3/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "15419663-3",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "15736418-9/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "15736418-9",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "15736418-9/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "15736418-9",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "15736418-9/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "15736418-9",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "15736418-9/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "15736418-9",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "15736418-9/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "15736418-9",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "15736418-9/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "15736418-9",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16203849-4/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16203849-4",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16203849-4/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16203849-4",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16203849-4/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16203849-4",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16203849-4/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16203849-4",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16203849-4/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16203849-4",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16203849-4/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16203849-4",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16571380-K/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16571380-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16571380-K/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [
+        "pdf.texto_superpuesto"
+      ],
+      "hallado": [
+        "pdf.texto_superpuesto"
+      ],
+      "rut_extraido": "16571380-K",
+      "campos": 6,
+      "acierto": [
+        "pdf.texto_superpuesto"
+      ],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16571380-K/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16571380-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16571380-K/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16571380-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16571380-K/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16571380-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16571380-K/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16571380-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16884102-7/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16884102-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16884102-7/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16884102-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16884102-7/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16884102-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16884102-7/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16884102-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16884102-7/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16884102-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "16884102-7/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "16884102-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17023581-9/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17023581-9",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17023581-9/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17023581-9",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17023581-9/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17023581-9",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17023581-9/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17023581-9",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17023581-9/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17023581-9",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17023581-9/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17023581-9",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17215663-0/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17215663-0",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17215663-0/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17215663-0",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17215663-0/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17215663-0",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17215663-0/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17215663-0",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17215663-0/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17215663-0",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17215663-0/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17215663-0",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17390552-1/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17390552-1",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17390552-1/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17390552-1",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17390552-1/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17390552-1",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17390552-1/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17390552-1",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17390552-1/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17390552-1",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17390552-1/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17390552-1",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17648215-K/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17648215-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17648215-K/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17648215-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17648215-K/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [
+        "pdf.fuentes_mezcladas_campo"
+      ],
+      "hallado": [
+        "pdf.fuentes_mezcladas_campo"
+      ],
+      "rut_extraido": "17648215-K",
+      "campos": 6,
+      "acierto": [
+        "pdf.fuentes_mezcladas_campo"
+      ],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17648215-K/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17648215-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17648215-K/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17648215-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17648215-K/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17648215-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17902344-K/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17902344-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17902344-K/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17902344-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17902344-K/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17902344-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17902344-K/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17902344-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17902344-K/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17902344-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "17902344-K/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "17902344-K",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18105926-5/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18105926-5",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18105926-5/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18105926-5",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18105926-5/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18105926-5",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18105926-5/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18105926-5",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18105926-5/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18105926-5",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18105926-5/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18105926-5",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18452307-8/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18452307-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18452307-8/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18452307-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18452307-8/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18452307-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18452307-8/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [
+        "pdf.imagen_baja_nitidez"
+      ],
+      "hallado": [
+        "pdf.imagen_baja_nitidez"
+      ],
+      "rut_extraido": "18452307-8",
+      "campos": 6,
+      "acierto": [
+        "pdf.imagen_baja_nitidez"
+      ],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18452307-8/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18452307-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18452307-8/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [
+        "validacion:formato.codigo_verificacion"
+      ],
+      "hallado": [
+        "validacion:formato.codigo_verificacion"
+      ],
+      "rut_extraido": "18452307-8",
+      "campos": 6,
+      "acierto": [
+        "validacion:formato.codigo_verificacion"
+      ],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18640975-2/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18640975-2",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18640975-2/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18640975-2",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18640975-2/3-hoja-vida-conductor-v2.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18640975-2",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18640975-2/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18640975-2",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18640975-2/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18640975-2",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18640975-2/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18640975-2",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18640975-2/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18640975-2",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18997304-7/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18997304-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18997304-7/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18997304-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18997304-7/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18997304-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18997304-7/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18997304-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18997304-7/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18997304-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18997304-7/6-certificado-antecedentes-v2.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "18997304-7",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "18997304-7/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [
+        "pdf.campo_rasterizado"
+      ],
+      "hallado": [
+        "pdf.campo_rasterizado"
+      ],
+      "rut_extraido": "18997304-7",
+      "campos": 5,
+      "acierto": [
+        "pdf.campo_rasterizado"
+      ],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19031476-6/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19031476-6",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19031476-6/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19031476-6",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19031476-6/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19031476-6",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19031476-6/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [
+        "pdf.imagen_baja_nitidez"
+      ],
+      "hallado": [
+        "pdf.imagen_baja_nitidez"
+      ],
+      "rut_extraido": "19031476-6",
+      "campos": 6,
+      "acierto": [
+        "pdf.imagen_baja_nitidez"
+      ],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19031476-6/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19031476-6",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19031476-6/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19031476-6",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19274630-2/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19274630-2",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19274630-2/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19274630-2",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19274630-2/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19274630-2",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19274630-2/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19274630-2",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19274630-2/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19274630-2",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19274630-2/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19274630-2",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19517204-8/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19517204-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19517204-8/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19517204-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19517204-8/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19517204-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19517204-8/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [
+        "pdf.fuentes_mezcladas_campo"
+      ],
+      "hallado": [
+        "pdf.fuentes_mezcladas_campo"
+      ],
+      "rut_extraido": "19517204-8",
+      "campos": 6,
+      "acierto": [
+        "pdf.fuentes_mezcladas_campo"
+      ],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19517204-8/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19517204-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "19517204-8/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "19517204-8",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "20136758-1/1-cedula-identidad.pdf",
+      "tipo": "cedula_identidad",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "20136758-1",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "20136758-1/2-licencia-conducir.pdf",
+      "tipo": "licencia_conducir",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "20136758-1",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "20136758-1/3-hoja-vida-conductor.pdf",
+      "tipo": "hoja_vida_conductor",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "20136758-1",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "20136758-1/4-certificado-ceim-v2.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "20136758-1",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "20136758-1/4-certificado-ceim.pdf",
+      "tipo": "certificado_estudios_profesionales",
+      "esperado": [
+        "pdf.fuentes_mezcladas_campo"
+      ],
+      "hallado": [
+        "pdf.fuentes_mezcladas_campo"
+      ],
+      "rut_extraido": "20136758-1",
+      "campos": 6,
+      "acierto": [
+        "pdf.fuentes_mezcladas_campo"
+      ],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "20136758-1/5-certificado-estudios-medios.pdf",
+      "tipo": "certificado_estudios_medios",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "20136758-1",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    },
+    {
+      "archivo": "20136758-1/6-certificado-antecedentes.pdf",
+      "tipo": "certificado_antecedentes",
+      "esperado": [],
+      "hallado": [],
+      "rut_extraido": "20136758-1",
+      "campos": 6,
+      "acierto": [],
+      "omitido": [],
+      "extra": [],
+      "errores": []
+    }
+  ]
+}

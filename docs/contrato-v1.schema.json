@@ -1,0 +1,1165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "stracon-ocr contrato v1.0",
+  "documento": {
+    "$defs": {
+      "Alternativa": {
+        "properties": {
+          "tipo": {
+            "enum": [
+              "cedula_identidad",
+              "licencia_conducir",
+              "certificado_estudios_medios",
+              "certificado_estudios_profesionales",
+              "certificado_antecedentes",
+              "hoja_vida_conductor",
+              "desconocido"
+            ],
+            "title": "Tipo",
+            "type": "string"
+          },
+          "confianza": {
+            "title": "Confianza",
+            "type": "number"
+          }
+        },
+        "required": [
+          "tipo",
+          "confianza"
+        ],
+        "title": "Alternativa",
+        "type": "object"
+      },
+      "Archivo": {
+        "properties": {
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          },
+          "sha256": {
+            "title": "Sha256",
+            "type": "string"
+          },
+          "mime_real": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mime Real"
+          },
+          "mime_declarado": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mime Declarado"
+          },
+          "bytes": {
+            "title": "Bytes",
+            "type": "integer"
+          },
+          "paginas": {
+            "title": "Paginas",
+            "type": "integer"
+          },
+          "origen": {
+            "enum": [
+              "pdf_nativo",
+              "pdf_escaneado",
+              "imagen",
+              "docx",
+              "doc",
+              "desconocido"
+            ],
+            "title": "Origen",
+            "type": "string"
+          },
+          "metadatos": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Metadatos",
+            "type": "object"
+          }
+        },
+        "required": [
+          "nombre",
+          "sha256",
+          "mime_real",
+          "mime_declarado",
+          "bytes",
+          "paginas",
+          "origen"
+        ],
+        "title": "Archivo",
+        "type": "object"
+      },
+      "Bloque": {
+        "properties": {
+          "bbox": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Bbox"
+          },
+          "texto": {
+            "title": "Texto",
+            "type": "string"
+          },
+          "conf": {
+            "default": 1.0,
+            "title": "Conf",
+            "type": "number"
+          },
+          "palabras": {
+            "default": [],
+            "items": {
+              "$ref": "#/$defs/Palabra"
+            },
+            "title": "Palabras",
+            "type": "array"
+          }
+        },
+        "required": [
+          "texto"
+        ],
+        "title": "Bloque",
+        "type": "object"
+      },
+      "Campo": {
+        "properties": {
+          "valor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valor"
+          },
+          "valor_normalizado": {
+            "default": null,
+            "title": "Valor Normalizado"
+          },
+          "pagina": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Pagina"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Bbox"
+          },
+          "conf": {
+            "default": 1.0,
+            "title": "Conf",
+            "type": "number"
+          },
+          "metodo": {
+            "enum": [
+              "nativo",
+              "regex",
+              "zona",
+              "ocr",
+              "llm",
+              "azure",
+              "qr",
+              "mrz"
+            ],
+            "title": "Metodo",
+            "type": "string"
+          },
+          "regla_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Regla Id"
+          },
+          "evidencia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidencia"
+          }
+        },
+        "required": [
+          "valor",
+          "metodo"
+        ],
+        "title": "Campo",
+        "type": "object"
+      },
+      "Clasificacion": {
+        "properties": {
+          "tipo": {
+            "default": "desconocido",
+            "enum": [
+              "cedula_identidad",
+              "licencia_conducir",
+              "certificado_estudios_medios",
+              "certificado_estudios_profesionales",
+              "certificado_antecedentes",
+              "hoja_vida_conductor",
+              "desconocido"
+            ],
+            "title": "Tipo",
+            "type": "string"
+          },
+          "confianza": {
+            "default": 0.0,
+            "title": "Confianza",
+            "type": "number"
+          },
+          "metodo": {
+            "default": "reglas",
+            "enum": [
+              "reglas",
+              "estadistico",
+              "llm",
+              "manual"
+            ],
+            "title": "Metodo",
+            "type": "string"
+          },
+          "alternativas": {
+            "default": [],
+            "items": {
+              "$ref": "#/$defs/Alternativa"
+            },
+            "title": "Alternativas",
+            "type": "array"
+          }
+        },
+        "title": "Clasificacion",
+        "type": "object"
+      },
+      "Codigo": {
+        "properties": {
+          "tipo": {
+            "enum": [
+              "qr",
+              "pdf417",
+              "mrz",
+              "otro"
+            ],
+            "title": "Tipo",
+            "type": "string"
+          },
+          "contenido": {
+            "title": "Contenido",
+            "type": "string"
+          },
+          "datos": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Datos",
+            "type": "object"
+          },
+          "pagina": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Pagina"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Bbox"
+          },
+          "valido": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valido"
+          }
+        },
+        "required": [
+          "tipo",
+          "contenido"
+        ],
+        "title": "Codigo",
+        "type": "object"
+      },
+      "ErrorEtapa": {
+        "properties": {
+          "etapa": {
+            "title": "Etapa",
+            "type": "string"
+          },
+          "mensaje": {
+            "title": "Mensaje",
+            "type": "string"
+          }
+        },
+        "required": [
+          "etapa",
+          "mensaje"
+        ],
+        "title": "ErrorEtapa",
+        "type": "object"
+      },
+      "OcrComparado": {
+        "properties": {
+          "motor": {
+            "title": "Motor",
+            "type": "string"
+          },
+          "similitud": {
+            "title": "Similitud",
+            "type": "number"
+          }
+        },
+        "required": [
+          "motor",
+          "similitud"
+        ],
+        "title": "OcrComparado",
+        "type": "object"
+      },
+      "Pagina": {
+        "properties": {
+          "n": {
+            "title": "N",
+            "type": "integer"
+          },
+          "ancho": {
+            "title": "Ancho",
+            "type": "number"
+          },
+          "alto": {
+            "title": "Alto",
+            "type": "number"
+          },
+          "dpi": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Dpi"
+          },
+          "rotacion": {
+            "default": 0,
+            "title": "Rotacion",
+            "type": "integer"
+          },
+          "fuente_texto": {
+            "enum": [
+              "nativo",
+              "ocr",
+              "docx"
+            ],
+            "title": "Fuente Texto",
+            "type": "string"
+          },
+          "motor": {
+            "title": "Motor",
+            "type": "string"
+          },
+          "bloques": {
+            "default": [],
+            "items": {
+              "$ref": "#/$defs/Bloque"
+            },
+            "title": "Bloques",
+            "type": "array"
+          },
+          "tablas": {
+            "default": [],
+            "items": {
+              "$ref": "#/$defs/Tabla"
+            },
+            "title": "Tablas",
+            "type": "array"
+          },
+          "ocr_comparado": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/OcrComparado"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "n",
+          "ancho",
+          "alto",
+          "fuente_texto",
+          "motor"
+        ],
+        "title": "Pagina",
+        "type": "object"
+      },
+      "Palabra": {
+        "properties": {
+          "t": {
+            "title": "T",
+            "type": "string"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Bbox"
+          },
+          "conf": {
+            "default": 1.0,
+            "title": "Conf",
+            "type": "number"
+          },
+          "fuente": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Fuente"
+          },
+          "tam": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Tam"
+          }
+        },
+        "required": [
+          "t"
+        ],
+        "title": "Palabra",
+        "type": "object"
+      },
+      "Senal": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "familia": {
+            "enum": [
+              "integridad",
+              "metadatos",
+              "estructura",
+              "docx",
+              "visual",
+              "ocr",
+              "duplicado"
+            ],
+            "title": "Familia",
+            "type": "string"
+          },
+          "severidad": {
+            "enum": [
+              "info",
+              "baja",
+              "media",
+              "alta"
+            ],
+            "title": "Severidad",
+            "type": "string"
+          },
+          "campo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Campo"
+          },
+          "pagina": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Pagina"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Bbox"
+          },
+          "detalle": {
+            "title": "Detalle",
+            "type": "string"
+          },
+          "evidencia": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Evidencia",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "familia",
+          "severidad",
+          "detalle"
+        ],
+        "title": "Senal",
+        "type": "object"
+      },
+      "Tabla": {
+        "properties": {
+          "bbox": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Bbox"
+          },
+          "celdas": {
+            "default": [],
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "title": "Celdas",
+            "type": "array"
+          }
+        },
+        "title": "Tabla",
+        "type": "object"
+      },
+      "Validacion": {
+        "properties": {
+          "regla": {
+            "title": "Regla",
+            "type": "string"
+          },
+          "resultado": {
+            "enum": [
+              "ok",
+              "falla",
+              "no_aplica"
+            ],
+            "title": "Resultado",
+            "type": "string"
+          },
+          "campo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Campo"
+          },
+          "detalle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Detalle"
+          }
+        },
+        "required": [
+          "regla",
+          "resultado"
+        ],
+        "title": "Validacion",
+        "type": "object"
+      },
+      "Versiones": {
+        "properties": {
+          "pipeline": {
+            "title": "Pipeline",
+            "type": "string"
+          },
+          "reglas": {
+            "title": "Reglas",
+            "type": "string"
+          },
+          "motores": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "default": {},
+            "title": "Motores",
+            "type": "object"
+          },
+          "modelo_llm": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Modelo Llm"
+          }
+        },
+        "required": [
+          "pipeline",
+          "reglas"
+        ],
+        "title": "Versiones",
+        "type": "object"
+      }
+    },
+    "properties": {
+      "contrato_version": {
+        "default": "1.0",
+        "title": "Contrato Version",
+        "type": "string"
+      },
+      "id": {
+        "title": "Id",
+        "type": "string"
+      },
+      "expediente": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Expediente"
+      },
+      "archivo": {
+        "$ref": "#/$defs/Archivo"
+      },
+      "clasificacion": {
+        "$ref": "#/$defs/Clasificacion",
+        "default": {
+          "tipo": "desconocido",
+          "confianza": 0.0,
+          "metodo": "reglas",
+          "alternativas": []
+        }
+      },
+      "paginas": {
+        "default": [],
+        "items": {
+          "$ref": "#/$defs/Pagina"
+        },
+        "title": "Paginas",
+        "type": "array"
+      },
+      "codigos": {
+        "default": [],
+        "items": {
+          "$ref": "#/$defs/Codigo"
+        },
+        "title": "Codigos",
+        "type": "array"
+      },
+      "campos": {
+        "additionalProperties": {
+          "$ref": "#/$defs/Campo"
+        },
+        "default": {},
+        "title": "Campos",
+        "type": "object"
+      },
+      "senales": {
+        "default": [],
+        "items": {
+          "$ref": "#/$defs/Senal"
+        },
+        "title": "Senales",
+        "type": "array"
+      },
+      "validaciones": {
+        "default": [],
+        "items": {
+          "$ref": "#/$defs/Validacion"
+        },
+        "title": "Validaciones",
+        "type": "array"
+      },
+      "versiones": {
+        "$ref": "#/$defs/Versiones"
+      },
+      "procesado_en": {
+        "format": "date-time",
+        "title": "Procesado En",
+        "type": "string"
+      },
+      "duracion_ms": {
+        "default": 0,
+        "title": "Duracion Ms",
+        "type": "integer"
+      },
+      "tiempos_ms": {
+        "additionalProperties": {
+          "type": "integer"
+        },
+        "default": {},
+        "title": "Tiempos Ms",
+        "type": "object"
+      },
+      "errores": {
+        "default": [],
+        "items": {
+          "$ref": "#/$defs/ErrorEtapa"
+        },
+        "title": "Errores",
+        "type": "array"
+      },
+      "resumen": {
+        "additionalProperties": true,
+        "description": "Conteos para la webapp. No decide nada: solo resume los hallazgos.",
+        "readOnly": true,
+        "title": "Resumen",
+        "type": "object"
+      }
+    },
+    "required": [
+      "id",
+      "archivo",
+      "versiones",
+      "procesado_en",
+      "resumen"
+    ],
+    "title": "Documento",
+    "type": "object"
+  },
+  "expediente": {
+    "$defs": {
+      "Discrepancia": {
+        "properties": {
+          "campo": {
+            "title": "Campo",
+            "type": "string"
+          },
+          "documentos": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Documentos",
+            "type": "array"
+          },
+          "valores": {
+            "items": {},
+            "title": "Valores",
+            "type": "array"
+          },
+          "similitud": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Similitud"
+          },
+          "severidad": {
+            "enum": [
+              "info",
+              "baja",
+              "media",
+              "alta"
+            ],
+            "title": "Severidad",
+            "type": "string"
+          },
+          "detalle": {
+            "title": "Detalle",
+            "type": "string"
+          }
+        },
+        "required": [
+          "campo",
+          "documentos",
+          "valores",
+          "severidad",
+          "detalle"
+        ],
+        "title": "Discrepancia",
+        "type": "object"
+      },
+      "DocumentoRef": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "tipo": {
+            "enum": [
+              "cedula_identidad",
+              "licencia_conducir",
+              "certificado_estudios_medios",
+              "certificado_estudios_profesionales",
+              "certificado_antecedentes",
+              "hoja_vida_conductor",
+              "desconocido"
+            ],
+            "title": "Tipo",
+            "type": "string"
+          },
+          "sha256": {
+            "title": "Sha256",
+            "type": "string"
+          },
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "tipo",
+          "sha256",
+          "nombre"
+        ],
+        "title": "DocumentoRef",
+        "type": "object"
+      },
+      "Duplicado": {
+        "properties": {
+          "tipo": {
+            "enum": [
+              "sha256",
+              "phash_pagina"
+            ],
+            "title": "Tipo",
+            "type": "string"
+          },
+          "documento": {
+            "title": "Documento",
+            "type": "string"
+          },
+          "otro_expediente": {
+            "title": "Otro Expediente",
+            "type": "string"
+          },
+          "otro_documento": {
+            "title": "Otro Documento",
+            "type": "string"
+          },
+          "distancia": {
+            "default": 0,
+            "title": "Distancia",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "tipo",
+          "documento",
+          "otro_expediente",
+          "otro_documento"
+        ],
+        "title": "Duplicado",
+        "type": "object"
+      },
+      "Fuente": {
+        "properties": {
+          "documento": {
+            "title": "Documento",
+            "type": "string"
+          },
+          "fuente": {
+            "title": "Fuente",
+            "type": "string"
+          },
+          "estado": {
+            "enum": [
+              "coincide",
+              "no_coincide",
+              "no_disponible",
+              "pendiente_revisor"
+            ],
+            "title": "Estado",
+            "type": "string"
+          },
+          "folio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Folio"
+          },
+          "codigo_verificacion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Codigo Verificacion"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          }
+        },
+        "required": [
+          "documento",
+          "fuente",
+          "estado"
+        ],
+        "title": "Fuente",
+        "type": "object"
+      },
+      "Identidad": {
+        "properties": {
+          "rut": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Rut"
+          },
+          "nombre": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Nombre"
+          },
+          "fecha_nacimiento": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Fecha Nacimiento"
+          }
+        },
+        "title": "Identidad",
+        "type": "object"
+      }
+    },
+    "properties": {
+      "contrato_version": {
+        "default": "1.0",
+        "title": "Contrato Version",
+        "type": "string"
+      },
+      "expediente": {
+        "title": "Expediente",
+        "type": "string"
+      },
+      "documentos": {
+        "default": [],
+        "items": {
+          "$ref": "#/$defs/DocumentoRef"
+        },
+        "title": "Documentos",
+        "type": "array"
+      },
+      "faltantes": {
+        "default": [],
+        "items": {
+          "type": "string"
+        },
+        "title": "Faltantes",
+        "type": "array"
+      },
+      "identidad": {
+        "$ref": "#/$defs/Identidad",
+        "default": {
+          "rut": null,
+          "nombre": null,
+          "fecha_nacimiento": null
+        }
+      },
+      "discrepancias": {
+        "default": [],
+        "items": {
+          "$ref": "#/$defs/Discrepancia"
+        },
+        "title": "Discrepancias",
+        "type": "array"
+      },
+      "fuentes": {
+        "default": [],
+        "items": {
+          "$ref": "#/$defs/Fuente"
+        },
+        "title": "Fuentes",
+        "type": "array"
+      },
+      "duplicados": {
+        "default": [],
+        "items": {
+          "$ref": "#/$defs/Duplicado"
+        },
+        "title": "Duplicados",
+        "type": "array"
+      },
+      "procesado_en": {
+        "format": "date-time",
+        "title": "Procesado En",
+        "type": "string"
+      }
+    },
+    "required": [
+      "expediente",
+      "procesado_en"
+    ],
+    "title": "Expediente",
+    "type": "object"
+  }
+}

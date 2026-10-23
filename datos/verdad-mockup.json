@@ -1,0 +1,44 @@
+{
+  "fuente": "C:\\Users\\amsalinas\\Desktop\\stracon-validacion-documental\\datos-prueba-validacion.csv",
+  "documentos": {
+    "18452307-8/4-certificado-ceim.pdf": [
+      "pdf.imagen_baja_nitidez"
+    ],
+    "18452307-8/6-certificado-antecedentes.pdf": [
+      "validacion:formato.codigo_verificacion"
+    ],
+    "17648215-K/3-hoja-vida-conductor.pdf": [
+      "pdf.fuentes_mezcladas_campo"
+    ],
+    "15419663-3/4-certificado-ceim.pdf": [
+      "pdf.texto_superpuesto"
+    ],
+    "12794536-5/2-licencia-conducir.pdf": [
+      "pdf.fuentes_mezcladas_campo"
+    ],
+    "12794536-5/4-certificado-ceim.pdf": [
+      "pdf.texto_superpuesto"
+    ],
+    "19031476-6/4-certificado-ceim.pdf": [
+      "pdf.imagen_baja_nitidez"
+    ],
+    "18997304-7/6-certificado-antecedentes.pdf": [
+      "pdf.campo_rasterizado"
+    ],
+    "19517204-8/4-certificado-ceim.pdf": [
+      "pdf.fuentes_mezcladas_campo"
+    ],
+    "20136758-1/4-certificado-ceim.pdf": [
+      "pdf.fuentes_mezcladas_campo"
+    ],
+    "16571380-K/2-licencia-conducir.pdf": [
+      "pdf.texto_superpuesto"
+    ]
+  },
+  "externas": {
+    "17215663-0/3-hoja-vida-conductor.pdf": "Solo cambia el valor: se detecta al contrastar con el emisor (Agente 2) o entre documentos",
+    "18105926-5/4-certificado-ceim.pdf": "Solo cambia el valor: se detecta al contrastar con el emisor (Agente 2) o entre documentos",
+    "15736418-9/3-hoja-vida-conductor.pdf": "Solo cambia el valor: se detecta al contrastar con el emisor (Agente 2) o entre documentos",
+    "18640975-2/3-hoja-vida-conductor.pdf": "Solo cambia el valor: se detecta al contrastar con el emisor (Agente 2) o entre documentos"
+  }
+}

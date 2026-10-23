@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>stracon-ocr · consola de prueba</title>
+<style>
+:root {
+  --azul: #15284B; --rojo: #F42534; --gris: #E3E3E3; --texto: #1F2937; --suave: #6B7280; --fondo: #F6F7F9; --blanco: #FFFFFF;
+  --alta: #DC2626; --media: #EA7808; --baja: #CAA000; --info: #64748B; --ok: #059669; --campo: #2563EB; --observado: #7C3AED;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 14px/1.45 'Segoe UI', 'IBM Plex Sans', Arial, sans-serif; color: var(--texto); background: var(--fondo); }
+header { background: var(--azul); color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+header h1 { font-size: 16px; margin: 0; letter-spacing: .04em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+.soporte { display: inline-block; width: 10px; height: 10px; background: var(--rojo); clip-path: polygon(0 0, 100% 0, 100% 100%, 79.5% 100%, 0 33.3%); }
+#estado { font-size: 12px; opacity: .85; margin-left: auto; }
+main { display: grid; grid-template-columns: 340px 1fr; gap: 16px; padding: 16px; max-width: 1500px; margin: 0 auto; }
+@media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+.panel { background: var(--blanco); border: 1px solid #E5E7EB; border-radius: 8px; padding: 14px; }
+.panel h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--azul); margin: 0 0 10px; display: flex; gap: 8px; align-items: center; }
+label { display: block; font-size: 12px; color: var(--suave); margin: 8px 0 3px; }
+input[type=text], select { width: 100%; padding: 7px 9px; border: 1px solid #D1D5DB; border-radius: 6px; font: inherit; }
+#zona { border: 2px dashed #CBD5E1; border-radius: 8px; padding: 18px; text-align: center; color: var(--suave); cursor: pointer; }
+#zona.sobre { border-color: var(--azul); background: #EEF2FF; }
+button { background: var(--azul); color: #fff; border: 0; border-radius: 6px; padding: 8px 14px; font: inherit; font-weight: 600; cursor: pointer; }
+button:disabled { opacity: .5; cursor: wait; }
+button.sec { background: #fff; color: var(--azul); border: 1px solid var(--azul); }
+.fila { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+.lista { list-style: none; margin: 0; padding: 0; }
+.lista li { padding: 8px; border-radius: 6px; cursor: pointer; border: 1px solid transparent; }
+.lista li:hover { background: #F3F4F6; }
+.lista li.activo { border-color: var(--azul); background: #EEF2FF; }
+.lista .nombre { font-weight: 600; word-break: break-all; }
+.lista .meta { font-size: 12px; color: var(--suave); }
+.chip { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; color: #fff; margin-right: 4px; }
+.est-senal_alta { background: var(--alta); } .est-senal_media { background: var(--media); } .est-observado { background: var(--observado); } .est-sin_senales { background: var(--ok); } .est-sin_observaciones { background: var(--ok); }
+.obs { border-left: 4px solid var(--observado); padding: 6px 10px; margin-bottom: 8px; background: #F5F3FF; border-radius: 0 6px 6px 0; }
+.obs .accion { font-weight: 600; color: var(--observado); font-size: 12px; }
+.obs .msg { background: #fff; border: 1px dashed #C4B5FD; padding: 6px 8px; border-radius: 6px; margin-top: 4px; font-size: 13px; }
+.obs button { padding: 3px 8px; font-size: 12px; margin-top: 4px; }
+.alta { background: var(--alta); } .media { background: var(--media); } .baja { background: var(--baja); } .info { background: var(--info); } .ok { background: var(--ok); } .falla { background: var(--alta); } .no_aplica { background: var(--info); }
+#detalle { min-height: 400px; }
+.cabecera { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+.cabecera h3 { margin: 0; font-size: 18px; color: var(--azul); }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; margin-top: 12px; }
+@media (max-width: 1200px) { .grid2 { grid-template-columns: 1fr; } }
+.visor { background: #F3F4F6; border-radius: 6px; padding: 8px; text-align: center; }
+.visor img { max-width: 100%; border: 1px solid #E5E7EB; background: #fff; }
+.paginador { display: flex; gap: 6px; justify-content: center; margin-bottom: 6px; align-items: center; font-size: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid #F1F5F9; vertical-align: top; }
+th { font-size: 11px; text-transform: uppercase; color: var(--suave); letter-spacing: .05em; }
+.senal { border-left: 4px solid var(--info); padding: 6px 10px; margin-bottom: 8px; background: #FAFAFA; border-radius: 0 6px 6px 0; }
+.senal.sev-alta { border-color: var(--alta); } .senal.sev-media { border-color: var(--media); } .senal.sev-baja { border-color: var(--baja); }
+.senal .id { font-family: Consolas, monospace; font-size: 12px; color: var(--suave); }
+.num { display: inline-block; min-width: 18px; text-align: center; font-weight: 700; color: #fff; border-radius: 3px; margin-right: 6px; font-size: 12px; }
+details { margin-top: 10px; } summary { cursor: pointer; color: var(--azul); font-weight: 600; }
+pre { background: #0F172A; color: #E2E8F0; padding: 10px; border-radius: 6px; overflow: auto; max-height: 420px; font-size: 12px; }
+.vacio { color: var(--suave); font-style: italic; }
+.aviso { background: #FEF3C7; border: 1px solid #FCD34D; padding: 8px 10px; border-radius: 6px; font-size: 13px; margin-top: 8px; }
+.error { background: #FEE2E2; border-color: #FCA5A5; }
+.ev { font-size: 12px; color: var(--suave); margin-top: 2px; word-break: break-word; }
+.ev b { color: var(--texto); font-weight: 600; }
+details.mini { margin-top: 2px; } details.mini summary { font-size: 12px; font-weight: 400; }
+h4 { margin: 14px 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--azul); }
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="soporte"></span>stracon-ocr · consola de prueba</h1>
+  <span id="estado">Conectando…</span>
+</header>
+<main>
+  <section>
+    <div class="panel">
+      <h2><span class="soporte"></span>Procesar</h2>
+      <div id="zona">Arrastra PDF, imágenes o Word aquí<br><small>o haz clic para elegir</small></div>
+      <input id="archivos" type="file" multiple hidden accept=".pdf,.jpg,.jpeg,.png,.tif,.tiff,.webp,.heic,.heif,.docx,.doc">
+      <div id="elegidos" class="meta" style="margin-top:6px;font-size:12px;color:var(--suave)"></div>
+      <label for="exp">Expediente (RUT del postulante)</label>
+      <input id="exp" type="text" placeholder="12794536-5 (opcional)">
+      <label for="tipo">Tipo de documento</label>
+      <select id="tipo"><option value="">Clasificar automáticamente</option></select>
+      <div class="fila">
+        <button id="btnProcesar">Procesar</button>
+        <button id="btnContraste" class="sec" title="Recalcula el contraste del expediente con los documentos guardados">Contrastar expediente</button>
+      </div>
+      <div id="msg"></div>
+    </div>
+    <div class="panel" style="margin-top:16px">
+      <h2><span class="soporte"></span>Documentos</h2>
+      <div class="fila" style="margin-top:0"><input id="filtro" type="text" placeholder="Filtrar por expediente o buscar texto"><button class="sec" id="btnBuscar">Ir</button></div>
+      <ul id="docs" class="lista" style="margin-top:8px"></ul>
+    </div>
+  </section>
+  <section class="panel" id="detalle"><p class="vacio">Procesa un documento o elige uno de la lista.</p></section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SEV = {alta: 'Alta', media: 'Media', baja: 'Baja', info: 'Info'};
+let elegidos = [], actual = null, pagina = 1, ACTUAL = {};
+
+async function api(ruta, opciones) {
+  const r = await fetch(ruta, opciones);
+  if (!r.ok) { let d = await r.text(); try { d = JSON.parse(d).detail } catch {} throw new Error(typeof d === 'string' ? d : JSON.stringify(d)); }
+  return r.json();
+}
+function mensaje(html, clase = '') { $('#msg').innerHTML = html ? `<div class="aviso ${clase}">${html}</div>` : ''; }
+
+async function iniciar() {
+  try {
+    const s = await api('/salud');
+    ACTUAL = {pipeline: s.version, reglas: s.reglas};
+    const m = Object.entries(s.motores).map(([k, v]) => `${k} ${v ? '✓' : '✗'}`).join(' · ');
+    $('#estado').textContent = `v${s.version} · contrato ${s.contrato} · reglas ${s.reglas} · ${m}`;
+    for (const t of await api('/tipos')) $('#tipo').insertAdjacentHTML('beforeend', `<option value="${t.clave}">${esc(t.nombre)}</option>`);
+  } catch (e) { $('#estado').textContent = 'API no disponible: ' + e.message; }
+  listar();
+}
+
+async function listar(expediente) {
+  const q = expediente ? `?expediente=${encodeURIComponent(expediente)}` : '?limite=60';
+  const docs = await api('/documentos' + q);
+  $('#docs').innerHTML = docs.length ? docs.map(d => `
+    <li data-id="${d.id}" class="${actual && actual.id === d.id ? 'activo' : ''}">
+      <div class="nombre">${esc(d.nombre)}</div>
+      <div class="meta">${esc(d.tipo)} · ${esc(d.expediente || 'sin expediente')}</div>
+      <div>${chipEstado(d.estado, d.estado_texto)}${+d.senales ? `<span class="meta">${d.senales} señal(es)</span> ` : ''}${+d.observaciones ? `<span class="meta">${d.observaciones} observación(es)</span>` : ''}</div>
+    </li>`).join('') : '<li class="vacio">Sin documentos</li>';
+}
+
+// estado del documento para el revisor: Señal alta > Señal media > Observado > Sin señales
+const chipEstado = (estado, texto) => estado ? `<span class="chip est-${esc(estado)}">${esc(texto || estado)}</span>` : '';
+const ACCIONES = {solicitar_reenvio: 'Solicitar reenvío', solicitar_original: 'Solicitar PDF original', solicitar_documento: 'Solicitar documento',
+  solicitar_vigente: 'Solicitar documento vigente', revisar: 'Revisar'};
+const MOTIVOS = {calidad: 'Calidad de imagen', incompleto: 'Documento incompleto', no_reconocido: 'Documento no reconocido', archivo: 'Archivo',
+  vigencia: 'Vigencia', no_verificable: 'No verificable', faltante: 'Documento faltante'};
+const tarjetaObs = (o, conDocumento) => `
+    <div class="obs">
+      <span class="accion">${esc(ACCIONES[o.accion] || o.accion)}</span> · <span class="id">${esc(MOTIVOS[o.motivo] || o.motivo)} · ${esc(o.id)}${conDocumento && o.documento ? ' · ' + esc(o.documento) : ''}${o.pagina ? ' · pág. ' + o.pagina : ''}</span>
+      <div>${esc(o.detalle)}</div>
+      <div class="msg">${esc(o.mensaje_postulante)}</div>
+      <button class="sec" data-copiar="${esc(o.mensaje_postulante)}">Copiar mensaje</button>
+    </div>`;
+
+async function buscar() {
+  const v = $('#filtro').value.trim();
+  if (!v) return listar();
+  if (/^\d{7,8}-?[\dkK]$/.test(v)) return listar(v);
+  const filas = await api('/buscar?q=' + encodeURIComponent(v));
+  $('#docs').innerHTML = filas.map(f => `<li data-id="${f.id}"><div class="nombre">${esc(f.nombre)}</div><div class="meta">${esc(f.tipo)} · ${esc(f.expediente || '')}</div><div class="meta">${esc(f.fragmento)}</div></li>`).join('') || '<li class="vacio">Sin resultados</li>';
+}
+
+async function abrir(id) {
+  actual = await api('/documentos/' + id);
+  pagina = 1;
+  pintar();
+  document.querySelectorAll('#docs li').forEach(li => li.classList.toggle('activo', li.dataset.id === id));
+}
+
+function pintar() {
+  const d = actual, r = d.resumen;
+  const conImagen = d.paginas.filter(p => p.fuente_texto !== 'docx').map(p => p.n);
+  if (!conImagen.includes(pagina) && conImagen.length) pagina = conImagen[0];
+  const senales = d.senales.map((s, i) => `
+    <div class="senal sev-${s.severidad}">
+      <span class="num ${s.severidad}">${i + 1}</span><span class="chip ${s.severidad}">${SEV[s.severidad]}</span>
+      <span class="id">${esc(s.id)}${s.campo ? ' · ' + esc(s.campo) : ''}${s.pagina ? ' · pág. ' + s.pagina : ''}</span>
+      <div>${esc(s.detalle)}</div>
+    </div>`).join('') || '<p class="vacio">Sin señales de adulteración.</p>';
+  const campos = Object.entries(d.campos).map(([k, c]) => `
+    <tr><td><b>${esc(k)}</b></td><td>${esc(c.valor)}</td><td>${esc(Array.isArray(c.valor_normalizado) ? c.valor_normalizado.join(', ') : c.valor_normalizado)}</td>
+    <td>${esc(c.metodo)} · ${Number(c.conf).toFixed(2)}</td></tr>`).join('');
+  const ETIQUETAS = {leido: 'Leído', rut: 'RUT', dv_documento: 'DV del documento', dv_calculado: 'DV calculado', calculo: 'Cálculo módulo 11',
+    metodo_lectura: 'Método de lectura', confianza_lectura: 'Confianza de lectura', evidencia_lectura: 'Texto de origen', pagina: 'Página',
+    formato_esperado: 'Formato esperado', valor: 'Valor', fecha_emision: 'Emisión', dias: 'Días', maximo_dias: 'Máximo', hoy: 'Hoy'};
+  const OCULTAR = new Set(['valido', 'motivo', 'cuerpo']);
+  const evid = e => Object.entries(e || {}).filter(([k, x]) => !OCULTAR.has(k) && x !== null && x !== '')
+    .map(([k, x]) => `<div class="ev"><b>${esc(ETIQUETAS[k] || k)}:</b> ${esc(typeof x === 'number' && !Number.isInteger(x) ? x.toFixed(3) : x)}</div>`).join('');
+  const DATOS_CODIGO = {emisor: 'Emisor', folio: 'Folio', codigo_verificacion: 'Código', run: 'RUN', nombre: 'Nombre',
+    fecha_emision: 'Emisión', numero_documento: 'N° documento', fecha_nacimiento: 'Nacimiento', fecha_vencimiento: 'Vencimiento', url: 'URL'};
+  const cruce = d.validaciones.find(v => v.regla === 'qr.coincide_ocr');
+  const codigo = c => {
+    const datos = Object.entries(DATOS_CODIGO).filter(([k]) => c.datos && c.datos[k]).map(([k, t]) => `<div class="ev"><b>${t}:</b> ${esc(c.datos[k])}</div>`).join('');
+    const estado = c.valido === null ? 'Formato no reconocido (no es alerta)' : !c.valido ? '<span class="chip falla">RUN inválido</span>'
+      : cruce && cruce.resultado === 'falla' ? '<span class="chip falla">No coincide con el documento</span>'
+      : cruce && cruce.resultado === 'ok' ? '<span class="chip ok">Coincide con el documento</span>' : '<span class="chip ok">Leído</span>';
+    return `<tr><td>${esc(c.tipo.toUpperCase())}${c.pagina ? ' · pág. ' + c.pagina : ''}</td>
+      <td>${datos || `<div class="ev">${esc(c.contenido).slice(0, 120)}</div>`}<details class="mini"><summary>contenido original</summary><div class="ev">${esc(c.contenido)}</div></details></td><td>${estado}</td></tr>`;
+  };
+  const valids = d.validaciones.map(v => `<tr><td>${esc(v.regla)}</td><td><span class="chip ${v.resultado}">${v.resultado}</span></td>
+    <td>${esc(v.detalle || '')}${v.resultado === 'falla' ? evid(v.evidencia) : Object.keys(v.evidencia || {}).length ? `<details class="mini"><summary>ver detalle</summary>${evid(v.evidencia)}</details>` : ''}</td></tr>`).join('');
+  const meta = d.archivo.metadatos || {};
+  $('#detalle').innerHTML = `
+    <div class="cabecera">
+      <h3>${esc(d.archivo.nombre)}</h3>
+      <div>${chipEstado(r.estado, r.estado_texto)}${r.estado === 'sin_senales' && r.validaciones_fallidas ? '<span class="chip media">Revisar validaciones</span>' : ''}</div>
+    </div>
+    <div class="meta" style="color:var(--suave);font-size:12px;margin-top:4px">
+      ${esc(d.clasificacion.tipo)} (${d.clasificacion.metodo}, ${Number(d.clasificacion.confianza).toFixed(2)}) · ${esc(d.archivo.origen)} · ${d.archivo.paginas} pág. ·
+      ${d.duracion_ms} ms · expediente ${esc(d.expediente || '—')} · <a href="/documentos/${d.id}/archivo" target="_blank">original</a>
+    </div>
+    ${ACTUAL.reglas && (d.versiones.reglas !== ACTUAL.reglas || d.versiones.pipeline !== ACTUAL.pipeline) ? `<div class="aviso">
+      Este resultado se procesó con una versión anterior (reglas ${esc(d.versiones.reglas)}, librería ${esc(d.versiones.pipeline)}).
+      La versión actual es reglas ${esc(ACTUAL.reglas)}: el resultado puede cambiar. <button class="sec" data-reprocesar="${d.id}">Reprocesar</button></div>` : ''}
+    ${d.errores.length ? `<div class="aviso error">Etapas con error: ${d.errores.map(e => esc(e.etapa + ': ' + e.mensaje)).join('; ')}</div>` : ''}
+    <div class="grid2">
+      <div>
+        <div class="paginador">${conImagen.length > 1 ? conImagen.map(n => `<button class="${n === pagina ? '' : 'sec'}" data-pag="${n}">${n}</button>`).join('') : ''}
+          <span>Rojo/naranjo: señales numeradas · azul: campos</span></div>
+        <div class="visor">${conImagen.length ? `<img alt="Página ${pagina} con señales" src="/documentos/${d.id}/paginas/${pagina}/imagen?dpi=110&t=${Date.now()}">` : '<p class="vacio">Documento Word sin imágenes: solo texto.</p>'}</div>
+      </div>
+      <div>
+        ${(d.observaciones || []).length ? `<h4>Observaciones (${d.observaciones.length}) · solicitar aclaración al postulante</h4>${d.observaciones.map(o => tarjetaObs(o, false)).join('')}` : ''}
+        <h4>Señales (${d.senales.length})</h4>${senales}
+        <h4>Campos extraídos</h4>
+        ${campos ? `<table><tr><th>Campo</th><th>Valor</th><th>Normalizado</th><th>Método</th></tr>${campos}</table>` : '<p class="vacio">No se extrajeron campos.</p>'}
+        <h4>Validaciones</h4><table>${valids}</table>
+        ${d.codigos.length ? `<h4>Códigos del emisor</h4><table><tr><th>Tipo</th><th>Datos</th><th>Estado</th></tr>${d.codigos.map(codigo).join('')}</table>` : ''}
+      </div>
+    </div>
+    <details><summary>Metadatos del archivo</summary><pre>${esc(JSON.stringify(meta, null, 2))}</pre></details>
+    <details><summary>JSON completo (contrato ${esc(d.contrato_version)})</summary><pre>${esc(JSON.stringify(d, null, 2))}</pre></details>
+    <div id="expediente"></div>`;
+  if (d.expediente) mostrarExpediente(d.expediente, false);
+}
+
+async function mostrarExpediente(rut, recalcular) {
+  try {
+    const e = recalcular ? await api(`/expedientes/${encodeURIComponent(rut)}/contraste`, {method: 'POST'}) : await api(`/expedientes/${encodeURIComponent(rut)}`);
+    const disc = e.discrepancias.map(x => `<tr><td><span class="chip ${x.severidad}">${SEV[x.severidad]}</span></td><td>${esc(x.campo)}</td><td>${esc(x.detalle)}</td><td>${esc(JSON.stringify(x.valores))}</td></tr>`).join('');
+    const fuentes = e.fuentes.map(f => `<tr><td>${esc(f.documento)}</td><td>${esc(f.fuente)}</td><td>${esc(f.estado)}</td><td>${esc(f.folio || '')} ${esc(f.codigo_verificacion || '')}</td><td>${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">verificar</a>` : ''}</td></tr>`).join('');
+    const obsExp = (e.observaciones || []).map(o => tarjetaObs(o, true)).join('');
+    const html = `<h4>Expediente ${esc(e.expediente)} ${chipEstado(e.estado, e.estado === 'observado' ? 'Observado' : 'Sin observaciones')}</h4>
+      ${obsExp ? `<div style="margin-bottom:8px">${obsExp}</div>` : ''}
+      <div style="font-size:13px">Identidad: <b>${esc(e.identidad.nombre || '—')}</b> · RUT ${esc(e.identidad.rut || '—')} · nacimiento ${esc(e.identidad.fecha_nacimiento || '—')}<br>
+      Documentos: ${e.documentos.length} · Faltan: ${e.faltantes.length ? esc(e.faltantes.join(', ')) : 'ninguno'}</div>
+      ${disc ? `<table style="margin-top:6px"><tr><th>Sev.</th><th>Campo</th><th>Detalle</th><th>Valores</th></tr>${disc}</table>` : '<p class="vacio">Sin discrepancias entre documentos.</p>'}
+      ${fuentes ? `<h4>Fuentes emisoras (verificación del revisor)</h4><table>${fuentes}</table>` : ''}
+      ${e.duplicados.length ? `<div class="aviso error">Duplicados con otros expedientes: ${e.duplicados.map(x => esc(x.tipo + ' → ' + x.otro_expediente)).join(', ')}</div>` : ''}`;
+    const destino = $('#expediente');
+    if (destino) destino.innerHTML = html; else $('#detalle').innerHTML = html;
+  } catch (err) { if (recalcular) mensaje(esc(err.message), 'error'); }
+}
+
+async function procesar() {
+  if (!elegidos.length) return mensaje('Elige al menos un archivo.');
+  const exp = $('#exp').value.trim(), tipo = $('#tipo').value;
+  $('#btnProcesar').disabled = true;
+  mensaje(`Procesando ${elegidos.length} archivo(s)… (~3 s por página)`);
+  try {
+    let id;
+    if (elegidos.length > 1 && exp) {
+      const fd = new FormData(); elegidos.forEach(f => fd.append('archivos', f));
+      const r = await api(`/expedientes/${encodeURIComponent(exp)}/documentos`, {method: 'POST', body: fd});
+      id = r.documentos[0]?.id;
+    } else {
+      for (const f of elegidos) {
+        const fd = new FormData(); fd.append('archivo', f);
+        if (exp) fd.append('expediente', exp);
+        if (tipo) fd.append('tipo', tipo);
+        id = (await api('/documentos', {method: 'POST', body: fd})).id;
+      }
+      if (exp) await api(`/expedientes/${encodeURIComponent(exp)}/contraste`, {method: 'POST'});
+    }
+    mensaje('');
+    await listar(exp || undefined);
+    if (id) await abrir(id);
+  } catch (e) { mensaje(esc(e.message), 'error'); }
+  finally { $('#btnProcesar').disabled = false; }
+}
+
+function elegir(lista) { elegidos = [...lista]; $('#elegidos').textContent = elegidos.map(f => f.name).join(', '); }
+$('#zona').onclick = () => $('#archivos').click();
+$('#archivos').onchange = e => elegir(e.target.files);
+['dragenter', 'dragover'].forEach(ev => $('#zona').addEventListener(ev, e => { e.preventDefault(); $('#zona').classList.add('sobre'); }));
+['dragleave', 'drop'].forEach(ev => $('#zona').addEventListener(ev, e => { e.preventDefault(); $('#zona').classList.remove('sobre'); }));
+$('#zona').addEventListener('drop', e => elegir(e.dataTransfer.files));
+$('#btnProcesar').onclick = procesar;
+$('#btnContraste').onclick = () => { const exp = $('#exp').value.trim(); if (!exp) return mensaje('Indica el RUT del expediente.'); mostrarExpediente(exp, true); };
+$('#btnBuscar').onclick = buscar;
+$('#filtro').onkeydown = e => { if (e.key === 'Enter') buscar(); };
+$('#docs').onclick = e => { const li = e.target.closest('li[data-id]'); if (li) abrir(li.dataset.id); };
+$('#detalle').addEventListener('click', async e => {
+  const b = e.target.closest('[data-pag]');
+  if (b) { pagina = +b.dataset.pag; pintar(); return; }
+  const cp = e.target.closest('[data-copiar]');
+  if (cp) {
+    try { await navigator.clipboard.writeText(cp.dataset.copiar); cp.textContent = 'Copiado'; }
+    catch { cp.textContent = 'No se pudo copiar'; }
+    setTimeout(() => { cp.textContent = 'Copiar mensaje'; }, 1500);
+    return;
+  }
+  const r = e.target.closest('[data-reprocesar]');
+  if (r) {
+    r.disabled = true; r.textContent = 'Reprocesando…';
+    try { actual = await api(`/documentos/${r.dataset.reprocesar}/reprocesar`, {method: 'POST'}); pintar(); listar(actual.expediente || undefined); }
+    catch (err) { r.disabled = false; r.textContent = 'Reprocesar'; mensaje(esc(err.message), 'error'); }
+  }
+});
+iniciar();
+</script>
+</body>
+</html>

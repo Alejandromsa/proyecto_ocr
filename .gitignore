@@ -1,0 +1,24 @@
+# Entorno y cachés
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Datos locales: base de datos y originales subidos (pueden ser documentos reales con datos personales)
+datos/*.db
+datos/*.db-*
+datos/archivos/
+exportado/
+
+# Variables de entorno y credenciales
+.env
+.env.*
+
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store
