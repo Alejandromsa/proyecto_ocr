@@ -18,6 +18,7 @@ TipoDocumento = Literal[
     "certificado_estudios_profesionales",
     "certificado_antecedentes",
     "hoja_vida_conductor",
+    "validacion_emisor",  # copia del portal de verificación del emisor (no es uno de los documentos obligatorios)
     "desconocido",
 ]
 ORDEN_SEVERIDAD = {"info": 0, "baja": 1, "media": 2, "alta": 3}

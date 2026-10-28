@@ -84,6 +84,15 @@ def firma_cubre_todo(datos: bytes) -> bool:
     return abs(c + d - len(datos)) <= 2  # tolera el salto de línea final
 
 
+def clases_actualizaciones(datos: bytes, rev: dict) -> list[str]:
+    """Tipo de cada actualización incremental (firma, vacía o contenido), de la más antigua a la última."""
+    if not rev["revisiones_extra"]:
+        return []
+    cortes = [o + 5 for o in rev["offsets_eof"]]
+    partes = [datos[a:b] for a, b in zip(cortes, cortes[1:])][-rev["revisiones_extra"]:]
+    return [tipo_de_actualizacion(p) for p in partes]
+
+
 def senal_revisiones(doc, rev: dict, firmas_ok: bool, tipo: str, reglas: dict[str, Any]) -> Senal | None:
     """Explica las revisiones incrementales: firma electrónica del emisor, actualización vacía o contenido nuevo."""
     datos = doc.datos
@@ -106,10 +115,11 @@ def senal_revisiones(doc, rev: dict, firmas_ok: bool, tipo: str, reglas: dict[st
                      detalle=f"El PDF tiene {rev['revisiones_extra'] + 1} revisiones; las posteriores solo agregan " + " y ".join(explicacion))
     cambiadas = paginas_cambiadas(datos, rev["offsets_eof"])
     evidencia["paginas_cambiadas"] = cambiadas
-    if tipo in reglas.get("tipos_documento_fisico", []):
-        # PDF armado por el postulante (escaneo o foto de un documento físico): no prueba que se alteró el documento
+    if tipo in reglas.get("tipos_documento_fisico", []) or doc.origen == "pdf_escaneado":
+        # PDF armado por el postulante (escaneo o foto de un documento físico, o un PDF que es solo imagen: p. ej. una
+        # foto exportada desde el celular y luego anotada): no prueba que se alteró el documento del emisor
         severidad, detalle = "baja", (f"El PDF tiene {rev['revisiones_extra'] + 1} revisiones: el archivo se volvió a guardar "
-                                      "(es un escaneo hecho por el postulante, no un PDF del emisor)")
+                                      "(es un escaneo o una imagen armada por el postulante, no un PDF del emisor)")
     else:
         severidad = "alta"
         detalle = f"El PDF tiene {rev['revisiones_extra'] + 1} revisiones: se modificó después de generarse"
@@ -135,8 +145,10 @@ def analizar(doc, reglas: dict[str, Any], tipo: str = "desconocido") -> list[Sen
         return senales
     with pdf:
         if pdf.is_encrypted:
-            senales.append(Senal(id="pdf.cifrado_o_restringido", familia="integridad", severidad="media",
-                                 detalle="El PDF está cifrado (con permisos restringidos); el análisis puede ser parcial",
+            # se abrió sin contraseña: solo restringe permisos (copiar, editar). Así protegen sus PDF algunos emisores
+            # (p. ej. Acrobat Sign): es contexto, no un indicio
+            senales.append(Senal(id="pdf.cifrado_o_restringido", familia="integridad", severidad="baja",
+                                 detalle="El PDF está cifrado con permisos restringidos (se abre sin contraseña); el análisis puede ser parcial",
                                  evidencia={"permisos": str(pdf.allow)}))
         info = {k.lstrip("/"): _s(v) for k, v in (pdf.docinfo or {}).items()}
         xmp: dict[str, Any] = {}
@@ -161,6 +173,11 @@ def analizar(doc, reglas: dict[str, Any], tipo: str = "desconocido") -> list[Sen
             if fisico:  # el postulante armó el PDF con fotos o escaneos de su tarjeta: es lo esperable
                 senales.append(Senal(id="meta.productor_no_esperado", familia="metadatos", severidad="info", evidencia=ev,
                                      detalle=f"El PDF lo armó el postulante con {', '.join(editores)} (normal en un documento físico escaneado)"))
+            elif doc.origen == "pdf_escaneado":
+                # PDF sin texto (escaneo, foto o "imprimir a PDF" de una imagen): el editor solo empaquetó la imagen. Que
+                # no sea el original del emisor ya lo dicen pdf.solo_imagen y la observación de pedir el original
+                senales.append(Senal(id="meta.productor_no_esperado", familia="metadatos", severidad="baja", evidencia=ev,
+                                     detalle=f"El PDF es una imagen armada por el postulante con {', '.join(editores)}, no el PDF del emisor"))
             else:
                 sev = "alta" if tipo in reglas["tipos_emitidos_como_pdf_nativo"] else "media"
                 senales.append(Senal(id="meta.productor_no_esperado", familia="metadatos", severidad=sev, evidencia=ev,
@@ -175,10 +192,11 @@ def analizar(doc, reglas: dict[str, Any], tipo: str = "desconocido") -> list[Sen
         for nombre, f in (("CreationDate", creado), ("ModDate", modificado)):
             if f and f > ahora + timedelta(days=1):
                 motivos.append(f"{nombre} en el futuro")
+        senal_fechas = None
         if motivos:
-            senales.append(Senal(id="meta.fechas_incoherentes", familia="metadatos", severidad="media",
+            senal_fechas = Senal(id="meta.fechas_incoherentes", familia="metadatos", severidad="media",
                                  detalle="Fechas del PDF incoherentes: " + "; ".join(motivos),
-                                 evidencia={"CreationDate": info.get("CreationDate"), "ModDate": info.get("ModDate")}))
+                                 evidencia={"CreationDate": info.get("CreationDate"), "ModDate": info.get("ModDate")})
 
         # Info frente a XMP
         if xmp:
@@ -219,19 +237,38 @@ def analizar(doc, reglas: dict[str, Any], tipo: str = "desconocido") -> list[Sen
         tiene_firmas = "/AcroForm" in pdf.Root and any(
             f.get("/FT") == "/Sig" for f in pdf.Root.AcroForm.get("/Fields", [])
         )
-    senales_firma = firmas(datos, doc) if tiene_firmas else []
+    clases = clases_actualizaciones(datos, rev)
+    solo_firmas_despues = bool(clases) and all(c == "firma" for c in clases)
+    senales_firma = firmas(datos, doc, solo_firmas_despues) if tiene_firmas else []
     senales += senales_firma
     firmas_ok = bool(doc.pdf_info.get("firmas")) and all(f["intacta"] and f["valida"] for f in doc.pdf_info["firmas"])
     s = senal_revisiones(doc, rev, firmas_ok and not senales_firma, tipo, reglas)
     if s:
         senales.append(s)
+    if senal_fechas is not None:
+        if (solo_firmas_despues and firmas_ok and not senales_firma
+                and not any("futuro" in m for m in motivos)):
+            # la firma electrónica se agrega como revisión incremental y actualiza ModDate: la diferencia de fechas es
+            # el momento de la firma, no una edición (calibración oct 2026: título universitario firmado horas después)
+            senal_fechas = senal_fechas.model_copy(update={
+                "severidad": "info",
+                "detalle": senal_fechas.detalle + " (corresponde a la firma electrónica agregada después; la firma es válida)"})
+        senales.append(senal_fechas)
     doc.pdf_info["revisiones"] = {k: v for k, v in rev.items() if k != "offsets_eof"}
     return senales
 
 
-def firmas(datos: bytes, doc) -> list[Senal]:
+# niveles de modificación de pyHanko que no cambian el contenido firmado
+MODIFICACION_SIN_CONTENIDO = ("ModificationLevel.NONE", "ModificationLevel.LTA_UPDATES")
+
+
+def firmas(datos: bytes, doc, solo_firmas_despues: bool = False) -> list[Senal]:
     """Validación PAdES con pyHanko (extra opcional `firmas`). Sin raíces de confianza configuradas, la
-    confianza en el certificado se informa pero no se trata como invalidez."""
+    confianza en el certificado se informa pero no se trata como invalidez.
+
+    Varias firmas (p. ej. la del sistema y la del secretario general): la primera no cubre el archivo entero porque
+    después se agregó otra firma. Eso no es contenido nuevo si pyHanko clasifica lo agregado como sin cambios, sellos de
+    tiempo (LTA) o llenado de formulario y cada revisión posterior es una firma."""
     try:
         from pyhanko.pdf_utils.reader import PdfFileReader
         from pyhanko.sign.validation import validate_pdf_signature
@@ -245,6 +282,8 @@ def firmas(datos: bytes, doc) -> list[Senal]:
     resumen = []
     try:
         r = PdfFileReader(io.BytesIO(datos))
+        if getattr(r, "encrypted", False):
+            r.decrypt(b"")  # cifrado solo con permisos (sin contraseña de apertura), como Acrobat Sign
         for firma in r.embedded_signatures:
             st = validate_pdf_signature(firma)
             cobertura = str(getattr(st, "coverage", ""))
@@ -255,7 +294,9 @@ def firmas(datos: bytes, doc) -> list[Senal]:
             if not (st.intact and st.valid):
                 senales.append(Senal(id="pdf.firma_invalida", familia="integridad", severidad="alta",
                                      detalle=f"La firma '{firma.field_name}' no es válida (documento alterado después de firmar o firma corrupta)", evidencia=item))
-            elif "ENTIRE_FILE" not in cobertura:
+            elif "ENTIRE_FILE" not in cobertura and not (
+                    modificacion in MODIFICACION_SIN_CONTENIDO
+                    or (modificacion == "ModificationLevel.FORM_FILLING" and solo_firmas_despues)):
                 senales.append(Senal(id="pdf.cambios_post_firma", familia="integridad", severidad="alta",
                                      detalle=f"Hay contenido agregado después de la firma '{firma.field_name}'", evidencia=item))
     except Exception as e:  # firma ilegible

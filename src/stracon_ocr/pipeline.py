@@ -8,6 +8,7 @@ import importlib.metadata as md
 import json
 import logging
 import time
+from collections import Counter
 import uuid
 from datetime import date, datetime
 from pathlib import Path
@@ -113,11 +114,13 @@ class Procesador:
                 # el código lo genera el emisor: si no coincide con lo visible, alguien editó uno de los dos
                 senales.append(Senal(id="codigo.no_coincide", familia="integridad", severidad="alta", detalle=v.detalle,
                                      evidencia=v.evidencia))
+            if v.regla == "qr.coincide_ocr" and v.evidencia.get("coinciden"):
+                senales = _confirmadas_por_codigo(senales, set(v.evidencia["coinciden"]))
         phashes = self._etapa(doc, "phash", self._phashes, doc) or []
         if self.repo is not None:
             dups = self._etapa(doc, "duplicados", self.repo.duplicados, doc.sha256, expediente, phashes,
                                self.reglas["umbrales"]["phash_distancia_pagina"]) or []
-            senales += self._senales_duplicado(dups)
+            senales += self._senales_duplicado(dups, doc, clas.tipo, expediente)
         obs = obs_previas + (self._etapa(doc, "observaciones", observaciones.analizar, doc, clas, campos, senales, valids,
                                          self.reglas) or [])
 
@@ -246,17 +249,68 @@ class Procesador:
     def _phashes(self, doc: DocTrabajo) -> list[tuple[int, str]]:
         return [(p.n, str(imagehash.phash(p.imagen))) for p in doc.paginas[:3] if p.imagen is not None]
 
-    def _senales_duplicado(self, dups) -> list[Senal]:
+    def _rut_expediente(self, expediente: str | None, sha256: str) -> str | None:
+        """RUT más repetido entre los otros documentos del expediente (sin contar el archivo duplicado): identifica al
+        postulante aunque el expediente sea un id opaco y no un RUT."""
+        if self.repo is None or not expediente:
+            return None
+        try:
+            docs = self.repo.documentos_de_expediente(expediente)
+        except Exception:  # noqa: BLE001 - sin el expediente se informa como antes
+            return None
+        ruts = Counter(d.campos["rut"].valor_normalizado for d in docs
+                       if d.archivo.sha256 != sha256 and "rut" in d.campos and d.campos["rut"].valor_normalizado)
+        return ruts.most_common(1)[0][0] if ruts else None
+
+    def _tipo_documento(self, doc_id: str) -> str | None:
+        try:
+            otro = self.repo.obtener_documento(doc_id) if self.repo is not None else None
+        except Exception:  # noqa: BLE001
+            otro = None
+        return ((otro or {}).get("clasificacion") or {}).get("tipo")
+
+    def _senales_duplicado(self, dups, doc: DocTrabajo | None = None, tipo: str = "desconocido",
+                           expediente: str | None = None) -> list[Senal]:
+        """Duplicados en otros expedientes.
+
+        - Mismo archivo (SHA-256): alta, salve que los dos expedientes sean del mismo postulante (el RUT más repetido en
+          sus otros documentos coincide): el mismo postulante en dos convocatorias o cargos, o el archivo repetido en una
+          carpeta de documentos genéricos. Entonces es `info`.
+        - Página casi idéntica (pHash): solo en fotos y escaneos de documentos físicos (cédula, licencia) frente a otro
+          documento físico. Los certificados del Registro Civil y del Mineduc comparten plantilla y quedan a distancia
+          0–2 entre personas distintas aunque sean escaneos (calibración oct 2026: 808 falsas alertas en 133 documentos),
+          así que ahí la similitud de página no es evidencia.
+        """
         senales = []
+        sha = doc.sha256 if doc is not None else ""
+        paginas_ocr = {p.n for p in doc.paginas if p.fuente_texto == "ocr"} if doc is not None else set()
+        fisicos = set(self.reglas.get("tipos_documento_fisico", []))
+        rut_este: str | None = None
+        consultado = False
         for d in dups:
+            if d.tipo != "sha256":
+                n = d.documento.rsplit(" ", 1)[-1]
+                if tipo not in fisicos or not n.isdigit() or int(n) not in paginas_ocr:
+                    continue
+                otro_tipo = self._tipo_documento(d.otro_documento)
+                if otro_tipo is not None and otro_tipo not in fisicos:
+                    continue
+            if not consultado:
+                rut_este, consultado = self._rut_expediente(expediente, sha), True
+            rut_otro = self._rut_expediente(d.otro_expediente, sha) if rut_este else None
+            mismo = bool(rut_este and rut_otro and rut_este == rut_otro)
+            del_mismo = " del mismo postulante (sus otros documentos traen el mismo RUT)" if mismo else ""
             if d.tipo == "sha256":
-                senales.append(Senal(id="dup.archivo_identico", familia="duplicado", severidad="alta",
-                                     detalle=f"El mismo archivo (SHA-256) ya fue entregado en el expediente {d.otro_expediente}",
-                                     evidencia=d.model_dump()))
+                senales.append(Senal(
+                    id="dup.archivo_identico", familia="duplicado", severidad="info" if mismo else "alta",
+                    detalle=f"El mismo archivo (SHA-256) ya fue entregado en el expediente {d.otro_expediente}{del_mismo}",
+                    evidencia=d.model_dump()))
             else:
-                senales.append(Senal(id="dup.pagina_similar", familia="duplicado", severidad="media",
-                                     detalle=f"La {d.documento} es casi idéntica (pHash a distancia {d.distancia}) a un documento del expediente {d.otro_expediente}",
-                                     evidencia=d.model_dump()))
+                senales.append(Senal(
+                    id="dup.pagina_similar", familia="duplicado", severidad="info" if mismo else "media",
+                    detalle=(f"La {d.documento} es casi idéntica (pHash a distancia {d.distancia}) a un documento del expediente "
+                             f"{d.otro_expediente}{del_mismo}"),
+                    evidencia=d.model_dump()))
         return senales
 
     def _pagina_contrato(self, p: PaginaTrabajo) -> Pagina:
@@ -303,6 +357,18 @@ class Procesador:
         if self.repo is not None:
             self.repo.guardar_expediente(exp)
         return exp
+
+
+def _confirmadas_por_codigo(senales: list[Senal], campos: set[str]) -> list[Senal]:
+    """Una lectura OCR dudosa de un campo que el código del emisor (MRZ con dígito de control, PDF417, QR) confirma no es
+    indicio de nada: queda como `info` (calibración oct 2026: la fecha de nacimiento de cédulas fotografiadas, sobre el
+    fondo de seguridad, se lee con confianza 0,55 y la MRZ dice lo mismo)."""
+    salida = []
+    for s in senales:
+        if s.familia == "ocr" and s.campo in campos and s.severidad != "info":
+            s = s.model_copy(update={"severidad": "info", "detalle": s.detalle + " (el código del emisor confirma el valor)"})
+        salida.append(s)
+    return salida
 
 
 def _metadatos(doc: DocTrabajo) -> dict[str, Any]:

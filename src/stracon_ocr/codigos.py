@@ -32,20 +32,26 @@ def leer_codigos(doc: DocTrabajo) -> list[Codigo]:
     return codigos
 
 
-ACENTOS_SRCEI = {"A": "Á", "E": "É", "I": "Í", "O": "Ó", "U": "Ú", "N": "Ñ"}
+ACENTOS_SRCEI = {"A": "Á", "E": "É", "I": "Í", "O": "Ó", "U": "Ú", "N": "Ñ",
+                 "a": "á", "e": "é", "i": "í", "o": "ó", "u": "ú", "n": "ñ"}
+# escapes de puntuación observados en los certificados reales (oct 2026): "PE%nA" = PEÑA, "2012%, OTORGO" = coma,
+# "%1Art 4 …%2" = paréntesis
+ESCAPES_SRCEI = {"%3": "-", "%.": ":", "%,": ",", "%1": "(", "%2": ")", "%n": "Ñ", "%N": "Ñ"}
 
 
 def decodificar_srcei(texto: str) -> dict | None:
     """PDF417 de los certificados del Registro Civil (antecedentes, hoja de vida).
 
-    Usa escapes propios: '%3' = '-', '%.' = ':', '$C'/'$G' = salto de línea y '$' + vocal = vocal con tilde.
-    Cabecera: '$%$<tipo> <fecha emisión> <folio> <código de verificación>'.
+    Usa escapes propios: '%3' = '-', '%.' = ':', '%,' = ',', '%1'/'%2' = paréntesis, '%n' = 'Ñ', '$C'/'$G' = salto de
+    línea, '$V' = separador y '$' + vocal (mayúscula o minúscula) = vocal con tilde.
+    Cabecera: '$%$<tipo> <fecha emisión> <folio> <código de verificación>' (tipo 4 = antecedentes, 20 = hoja de vida).
     """
     if not texto.startswith("$%$"):
         return None
-    t = texto.replace("%3", "-").replace("%.", ":")
+    t = re.sub(r"%[3.,12nN]", lambda m: ESCAPES_SRCEI[m.group(0)], texto)
     t = re.sub(r"\$[CG]", "\n", t[3:])
-    t = re.sub(r"\$([AEIOUN])", lambda m: ACENTOS_SRCEI[m.group(1)], t)
+    t = t.replace("$V", " ")
+    t = re.sub(r"\$([AEIOUNaeioun])", lambda m: ACENTOS_SRCEI[m.group(1)], t)
     cab = re.match(r"\s*(\d+)\s+(\d{4}-\d{2}-\d{2})\s+(\d{6,15})\s+([0-9A-Fa-f]{8,16})", t)
     if not cab:
         return None

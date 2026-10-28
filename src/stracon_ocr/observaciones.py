@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import Any
 
 from . import calidad
+from .clasificacion import otros_documentos
 from .contrato import Campo, Clasificacion, Documento, Observacion, Senal, Validacion
 from .forense.pdf_estructura import MARCAS_ELECTRONICAS
 from .texto import normalizar, sin_espacios
@@ -89,6 +90,20 @@ def de_contenido(doc: DocTrabajo, clas: Clasificacion, campos: dict[str, Campo],
             mensaje_postulante=f"No pudimos leer {legibles} en su {nombre.lower()}. Por favor envíe nuevamente el documento "
                                "completo, sin cortes y con buena luz.",
             evidencia={"faltan": faltan, "encontrados": sorted(campos)},
+        ))
+
+    # varios documentos en un mismo archivo: se valida el principal; el otro no se procesa por separado
+    otros = otros_documentos(doc, tipo)
+    if otros:
+        nombres = " y ".join(_nombre_tipo(o["tipo"]).lower() for o in otros)
+        paginas = sorted({n for o in otros for n in o["paginas"]})
+        obs.append(Observacion(
+            id="contenido.varios_documentos", motivo="incompleto", accion="revisar",
+            detalle=f"El archivo trae además {nombres} (página {', '.join(map(str, paginas))}). Se clasificó y validó como "
+                    f"{nombre.lower()}; el otro documento no se validó ni cuenta para el expediente",
+            mensaje_postulante=f"Su archivo «{doc.nombre}» trae más de un documento. Por favor envíe cada documento "
+                               "(por ejemplo, la cédula y la licencia) en un archivo separado.",
+            evidencia={"principal": tipo, "otros": otros},
         ))
 
     # imagen o escaneo de un documento que el emisor entrega como PDF electrónico

@@ -26,6 +26,11 @@ $env:SOCR_CORS = "http://localhost:5173,https://mi-webapp"   # orígenes permiti
 | `GET /documentos/{id}/paginas/{n}/imagen?dpi=110` | PNG de la página con las señales numeradas (rojo/naranjo/amarillo) y los campos (azul) | `image/png` |
 | `GET /documentos/{id}/archivo` | Archivo original | binario |
 | `GET /buscar?q=` | Texto completo (sin tildes) | `[{id, tipo, fragmento}]` |
+| `POST /convocatorias` | Analiza una convocatoria completa de SharePoint (202) o la actualiza de forma incremental | `{id, nombre, estado}` |
+| `GET /convocatorias/{id}` | Avance: `leyendo` → `analizando` → `listo` o `error` | `{estado, total, procesados, omitidos, con_error, …}` |
+| `GET /convocatorias/{id}/resultados` | Cargos, postulantes, documentos (`DocumentoVista`) y expedientes; parciales mientras analiza | JSON |
+
+Las tres rutas de convocatorias están descritas en [api-convocatorias.md](api-convocatorias.md).
 
 Campos del formulario en `POST /documentos`: `archivo` (obligatorio), `expediente` (RUT), `tipo` (fuerza el tipo),
 `motor` (`rapidocr`, `tesseract` o `azure`) y `guardar` (`false` para solo devolver el JSON). Errores: 413 (archivo grande),

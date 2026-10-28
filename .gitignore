@@ -12,6 +12,7 @@ dist/
 datos/*.db
 datos/*.db-*
 datos/archivos/
+datos/resultados/
 exportado/
 
 # Variables de entorno y credenciales

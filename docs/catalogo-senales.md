@@ -8,18 +8,18 @@ Cada señal es determinista, explicable y reproducible. La severidad es la que s
 
 | Id | Qué detecta | Cómo | Sev. |
 |---|---|---|---|
-| `pdf.revisiones_incrementales` | Se modificó el PDF después de generarlo | Más de un `%%EOF`. Cada actualización se clasifica: **firma** (trae `/ByteRange`; así firman el Registro Civil y el Mineduc), **vacía** (sin objetos nuevos; p. ej. Word) o **contenido**. Solo «contenido» es alerta: alta en PDF del emisor, baja en un escaneo armado por el postulante. Firma o vacía = `info` | alta / baja / info |
+| `pdf.revisiones_incrementales` | Se modificó el PDF después de generarlo | Más de un `%%EOF`. Cada actualización se clasifica: **firma** (trae `/ByteRange`; así firman el Registro Civil y el Mineduc), **vacía** (sin objetos nuevos; p. ej. Word) o **contenido**. Solo «contenido» es alerta: alta en PDF del emisor, baja en un escaneo o un PDF que es solo imagen armado por el postulante. Firma o vacía = `info` | alta / baja / info |
 | `codigo.no_coincide` | El texto visible no coincide con el código del emisor | El PDF417 del Registro Civil (folio, código, RUN, nombre, fecha de emisión) o el QR/MRZ de la cédula difieren de lo que se lee en el documento | alta |
 | `pdf.firma_invalida` | Firma PAdES rota o certificado no confiable | pyHanko `validate_pdf_signature` | alta |
-| `pdf.cambios_post_firma` | Contenido agregado después de la firma | pyHanko: diff de revisiones y DocMDP | alta |
-| `pdf.cifrado_o_restringido` | No se puede analizar por completo | Bandera de cifrado en pikepdf | media |
+| `pdf.cambios_post_firma` | Contenido agregado después de la firma | pyHanko: cobertura y nivel de modificación. Varias firmas (sistema + secretario general) no son alerta si lo agregado después no cambia contenido (NONE, LTA) o es otra firma (FORM_FILLING y solo revisiones de firma) | alta |
+| `pdf.cifrado_o_restringido` | No se puede analizar por completo | Con contraseña de apertura: media. Solo permisos restringidos (se abre sin contraseña, como Acrobat Sign): baja, y pyHanko lo descifra para validar la firma | media / baja |
 
 ## Metadatos (`metadatos`)
 
 | Id | Qué detecta | Cómo | Sev. |
 |---|---|---|---|
-| `meta.productor_no_esperado` | El PDF salió de un editor y no del sistema emisor | Producer/Creator en la lista de editores (iLovePDF, Smallpdf, Sejda, Photoshop, Word, "Print To PDF", Canva). Alta en documentos que el emisor entrega en PDF (antecedentes, hoja de vida); media en el resto; `info` en cédula y licencia, que el postulante escanea y arma él mismo | alta / media / info |
-| `meta.fechas_incoherentes` | Edición posterior | ModDate distinta de CreationDate; fechas en el futuro o anteriores a la emisión impresa | media |
+| `meta.productor_no_esperado` | El PDF salió de un editor y no del sistema emisor | Producer/Creator en la lista de editores (iLovePDF, Smallpdf, Sejda, Photoshop, Word, "Print To PDF", Canva). Alta en documentos que el emisor entrega en PDF (antecedentes, hoja de vida, copia de verificación); media en el resto; baja si el PDF es solo imagen (el editor solo empaquetó una foto o un escaneo: lo que corresponde es pedir el original); `info` en cédula y licencia, que el postulante escanea y arma él mismo | alta / media / baja / info |
+| `meta.fechas_incoherentes` | Edición posterior | ModDate distinta de CreationDate; fechas en el futuro. `info` si la diferencia la explica una firma electrónica válida agregada como revisión incremental | media / info |
 | `meta.info_xmp_distintos` | Metadatos reescritos a medias | Info frente a XMP: fechas, CreatorTool, DocumentID e InstanceID | media |
 | `meta.historial_xmp` | Pasó por un editor | Entradas en `xmpMM:History` (ExifTool) | media |
 | `img.exif_editor` | La imagen pasó por un editor | Campos EXIF `Software` y `ProcessingSoftware`; miniatura distinta de la imagen | media |
@@ -29,12 +29,12 @@ Cada señal es determinista, explicable y reproducible. La severidad es la que s
 
 | Id | Qué detecta | Cómo | Sev. |
 |---|---|---|---|
-| `pdf.fuentes_mezcladas_campo` | Texto reemplazado con otra tipografía | pdfplumber: fuente, subset o tamaño distinto dentro del bbox de un campo o línea | alta |
-| `pdf.texto_superpuesto` | Texto escrito encima de otro | bbox de caracteres que se solapan con contenido distinto | alta |
-| `pdf.objeto_tapa_texto` | Un rectángulo blanco o una imagen oculta texto | Un rect o una imagen cuyo bbox cubre caracteres que están debajo | alta |
+| `pdf.fuentes_mezcladas_campo` | Texto reemplazado con otra tipografía | pdfplumber: fuente, subset o tamaño distinto dentro de una palabra. No cuenta un cambio de estilo de la misma familia en tramos de 2+ caracteres y mismo tamaño («Nº» normal + código en negrita) | alta |
+| `pdf.texto_superpuesto` | Texto escrito encima de otro | bbox de caracteres que se solapan con contenido distinto (letras o dígitos en las dos capas: una coma sobre un dígito es composición) | alta |
+| `pdf.objeto_tapa_texto` | Un rectángulo blanco o una imagen oculta texto | Un rect o una imagen cuyo bbox cubre caracteres que el OCR del render no ve. No cuenta una marca de agua translúcida: cubre 8+ palabras en 3+ líneas y el OCR sigue leyendo la mayoría | alta |
 | `pdf.capas_ocultas` | Contenido oculto | OCG con visibilidad apagada; anotaciones FreeText sobre el contenido | media |
-| `pdf.solo_imagen` | Se reimprimió o escaneó un documento que debería ser nativo | Sin capa de texto, cuando el tipo lo entrega el emisor en PDF o cuando el propio texto dice que era electrónico ("firmado electrónicamente", "timbre electrónico", "código de verificación") | media |
-| `rut.inconsistente` | Se editó una sola aparición del RUT | El RUT del campo y otra aparición en el documento difieren en 1 o 2 dígitos (la licencia lo repite junto a la foto; los certificados, en el encabezado y las tablas). Media si se leyó por OCR | alta / media |
+| `pdf.solo_imagen` | Se reimprimió o escaneó un documento que debería ser nativo | Sin capa de texto, cuando el tipo lo entrega el emisor en PDF o cuando el propio texto dice que era electrónico ("firmado electrónicamente", "timbre electrónico", "código de verificación"). Genera la observación `contenido.imagen_de_electronico` (pedir el original) | baja |
+| `rut.inconsistente` | Se editó una sola aparición del RUT | El RUT del campo y otra aparición en el documento difieren en 1 o 2 dígitos (la licencia lo repite junto a la foto; los certificados, en el encabezado y las tablas). Media si se leyó por OCR (cuentan también las apariciones con DV inválido: así queda la aparición editada en una foto) | alta / media |
 | `pdf.texto_nativo_distinto_ocr` | El texto declarado no coincide con lo que se ve | Diferencia entre el texto nativo y el OCR del render por campo (CER > umbral). Si el OCR no lee nada (marca de agua o sello encima) no se marca | alta |
 | `pdf.campo_rasterizado` | El valor de un campo es una imagen dentro de un PDF con texto | El rótulo existe como texto pero su valor no: solo aparece en el OCR del render o hay una imagen bajo el rótulo | alta |
 
@@ -61,7 +61,7 @@ Cada señal es determinista, explicable y reproducible. La severidad es la que s
 
 | Id | Qué detecta | Cómo | Sev. |
 |---|---|---|---|
-| `ocr.confianza_anomala` | Campo pegado o retocado | z-score de la confianza por palabra frente a la línea o página | media |
+| `ocr.confianza_anomala` | Campo pegado o retocado | z-score de la confianza por palabra frente a la página, solo en campos clave y en palabras con dígitos que forman el valor. Baja en cédula y licencia (fondo de seguridad); `info` si el código del emisor (MRZ, PDF417, QR) confirma el valor | media / baja / info |
 | `ocr.geometria_caracteres` | Dígito con otra tipografía | Varianza de alto y ancho de los caracteres del campo | media |
 | `ocr.linea_base` | Texto desalineado | Residuo de una regresión lineal de los bordes inferiores | media |
 | `ocr.fuera_de_plantilla` | Campo movido | bbox del campo fuera de la zona del emisor (con anclas y homografía ORB) | media |
@@ -71,8 +71,8 @@ Cada señal es determinista, explicable y reproducible. La severidad es la que s
 
 | Id | Qué detecta | Cómo | Sev. |
 |---|---|---|---|
-| `dup.archivo_identico` | El mismo archivo en otro postulante | SHA-256 repetido en la BD | alta |
-| `dup.pagina_similar` | La misma plantilla rellenada | pHash de la página con distancia ≤ umbral en otro expediente | media |
+| `dup.archivo_identico` | El mismo archivo en otro postulante | SHA-256 repetido en la BD. `info` si los dos expedientes son del mismo postulante (coincide el RUT más repetido de sus otros documentos) | alta / info |
+| `dup.pagina_similar` | La misma foto de una tarjeta reutilizada | pHash con distancia ≤ umbral en otro expediente, solo en fotos y escaneos de cédula o licencia frente a otra tarjeta. Los certificados de un emisor comparten plantilla y no se comparan | media / info |
 | `dup.foto_firma` | La misma foto de carnet o firma | pHash del recorte | alta |
 
 ## Validaciones (en `validaciones` del documento)
@@ -121,6 +121,46 @@ por `formato.*`, que revisa el revisor.
 
 Con los 22 documentos reales de la prueba, solo quedan observados los 4 reversos de licencia enviados como archivo aparte
 (`contenido.solo_reverso`); los demás quedan «Sin señales».
+
+## Calibración con 133 documentos reales (28 oct 2026)
+
+Conjunto: una convocatoria real (11 cargos, 36 carpetas de postulante, 133 PDF: certificados del Registro Civil nativos y
+escaneados, copias del portal de verificación, licencias y cédulas fotografiadas, certificados del Mineduc y títulos de
+siete instituciones). Herramienta: `herramientas/calibrar_real.py` (sus salidas quedan fuera del repositorio). Casi todos
+son auténticos, así que cada señal media o alta en ellos se revisó como posible falso positivo.
+
+| | Antes | Después |
+|---|---|---|
+| Documentos «Sin señales» | 24 | 106 |
+| «Señal media» / «Señal alta» | 71 / 22 | 1 / 1 |
+| Señales media o alta | 873 (808 de `dup.pagina_similar`) | 2 |
+
+Relajaciones (cada una con su prueba en `tests/test_calibracion_real.py` o `tests/test_pipeline.py`):
+
+| Señal | Falso positivo observado | Ajuste |
+|---|---|---|
+| `dup.pagina_similar` | Certificados del Registro Civil y del Mineduc de personas distintas quedan a distancia pHash 0–2, incluso escaneados | Solo fotos y escaneos de tarjetas |
+| `pdf.fuentes_mezcladas_campo` | Texto justificado sin espacios pegaba palabras en negrita y normal; «Nº» + código | Palabras separadas por huecos de 0,2 em; el cambio de estilo de una misma familia no cuenta |
+| `pdf.objeto_tapa_texto` | Marca de agua «COPIA» (imagen con máscara de color) de las copias de verificación | La marca de agua translúcida no cuenta |
+| `meta.productor_no_esperado` | «Microsoft: Print To PDF», iLovePDF, Canva en PDF que son solo imagen | Baja en PDF sin texto |
+| `pdf.solo_imagen` | 10 certificados electrónicos escaneados o impresos | Baja + observación de pedir el original |
+| `pdf.cambios_post_firma` | Título con dos firmas (sistema y secretaria general) | Una firma posterior no es contenido |
+| `pdf.cifrado_o_restringido`, `pdf.firma_invalida` | Título de Acrobat Sign cifrado solo con permisos | Baja; se descifra para validar la firma |
+| `meta.fechas_incoherentes` | ModDate posterior por la firma electrónica | `info` si la firma es válida y lo único agregado |
+| `codigo.no_coincide` | Escape `%n` (Ñ) del PDF417 sin decodificar; MRZ mal leída frente a un rótulo | Escapes reales; no se compara un campo cuyo dígito de control MRZ falla ni un valor sin dígitos |
+| `ocr.confianza_anomala` | Logos, dirección, meses («oct») y fechas de la cédula sobre el fondo de seguridad | Campos clave y palabras con dígitos; baja en tarjetas; `info` si el código del emisor confirma |
+| `pdf.revisiones_incrementales` | Foto exportada del celular y anotada (PDF solo imagen) | Baja en PDF solo imagen |
+| `dup.archivo_identico` | El mismo archivo en la carpeta del postulante y en una de documentos genéricos | `info` si ambos expedientes son del mismo postulante. Depende del orden de proceso: si el expediente aún no tiene otros documentos queda alta |
+
+Lo que sigue saliendo en los auténticos: un título en PDF nativo guardado con iLovePDF (media, correcto: hay que
+verificarlo con la institución) y el archivo repetido en la carpeta de documentos genéricos (alta, ver arriba).
+
+Detección conservada: las pruebas con los PDF alterados de `datos/dorado` siguen pasando y
+`herramientas/prueba_alteraciones.py` sobre 12 documentos de este conjunto (64 copias alteradas) detecta 58: editor 8/8, tapado incremental 8/8, tapado reescrito 8/8, dígito encimado 8/8, rasterizado 8/8 (por la observación de pedir el original), foto con EXIF de editor 12/12 y foto editada sin metadatos 6/12 (certificados del Registro Civil por el PDF417 y licencias por el RUT repetido; no en cédulas, certificados del Mineduc ni títulos, donde el RUT aparece una vez y no hay código legible). Ningún original da señal media o alta.
+Se probaron y se descartaron dos relajaciones de `rut.inconsistente` porque ocultaban fotos editadas (el falsificador
+cambia un dígito y deja el DV roto): tomar «la otra aparición válida» cuando el RUT leído no cumple el módulo 11, e
+ignorar en OCR las apariciones con DV inválido. El RUT leído se conserva (falla `rut.modulo11`) y la señal se mantiene
+media en OCR; en el conjunto real queda 1 caso legítimo (un dígito mal leído en una cédula fotocopiada).
 
 ## Prueba con documentos reales (22 oct 2026)
 

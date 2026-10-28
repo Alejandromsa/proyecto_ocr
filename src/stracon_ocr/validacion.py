@@ -85,10 +85,15 @@ def validar(tipo: str, campos: dict[str, Campo], codigos: list[Codigo], reglas: 
     for c in codigos:
         if c.tipo not in {"qr", "pdf417", "mrz"}:
             continue
+        controles = c.datos.get("controles", {}) if c.tipo == "mrz" else {}
         for clave_codigo, campo, como in COMPARACIONES:
             dato, f = c.datos.get(clave_codigo), campos.get(campo)
             if not dato or not f or not f.valor:
                 continue
+            if (como in {"rut", "fecha"} and not f.valor_normalizado) or (como == "alnum" and not re.search(r"\d", f.valor)):
+                continue  # lo leído no es un valor de ese tipo (p. ej. un rótulo bajo "N° documento"): no hay qué comparar
+            if controles.get(clave_codigo) is False:
+                continue  # la MRZ se leyó mal en ese campo (su dígito de control no cuadra): no es evidencia
             visible = f.valor_normalizado if como in {"rut", "fecha"} else f.valor
             if _iguales(dato, visible, como):
                 iguales.append(campo)
@@ -154,6 +159,6 @@ def validar(tipo: str, campos: dict[str, Campo], codigos: list[Codigo], reglas: 
         ok = re.match(patron, valor) is not None
         v.append(Validacion(regla=f"formato.{campo}", resultado="ok" if ok else "falla", campo=campo,
                             detalle=None if ok else f"'{c.valor}' no tiene el formato esperado para este emisor ({patron}). "
-                                                    "Los formatos de reglas.json son los del mockup: revisar si el emisor real usa otro.",
+                                                    "Revisar en reglas.json si este emisor usa otro formato.",
                             evidencia={"valor": c.valor, "formato_esperado": patron, "metodo_lectura": c.metodo, "confianza_lectura": c.conf}))
     return v

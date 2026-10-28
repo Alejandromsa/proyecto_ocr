@@ -15,6 +15,13 @@ from ..bloqueos import PDFIUM
 from ..layout import Pal, depurar_superpuestas
 from ..trabajo import PaginaTrabajo
 
+# Hueco entre caracteres que separa palabras, como fracción del tamaño de la letra. Los espacios no se pasan a
+# pdfplumber (se descartan con los caracteres en blanco) y el texto justificado del Mineduc trae palabras sin carácter
+# de espacio: con la tolerancia fija de 3 pt se pegaban ("RUN18851097-3,quienhacursado"), lo que rompía la extracción y
+# daba falsas tipografías mezcladas (negrita y normal en la misma "palabra"). Un espacio mide 0,25–0,6 em; dentro de
+# una palabra el hueco es casi 0.
+TOLERANCIA_X = 0.2
+
 
 def _es_blanco(color) -> bool:
     if color is None:
@@ -60,7 +67,8 @@ def _leer_paginas(datos: bytes, dpi: int) -> list[PaginaTrabajo]:
                     (girados if _girado(c) else rectos).append(p)
                 limpios, superposiciones = depurar_superpuestas(rectos)
                 nativas = []
-                for w in extract_words([original[id(p)] for p in limpios], return_chars=True, keep_blank_chars=False):
+                for w in extract_words([original[id(p)] for p in limpios], return_chars=True, keep_blank_chars=False,
+                                       x_tolerance_ratio=TOLERANCIA_X):
                     chars = w["chars"]
                     nativas.append(Pal(
                         t=w["text"],

@@ -67,6 +67,16 @@ def normalizar_rut(s: str) -> str | None:
     return f"{int(re.sub(r'[^0-9]', '', m.group(1)))}-{m.group(2).upper()}"
 
 
+# Los RUT de personas naturales están bajo 50 millones; las empresas e instituciones usan de 50 a 99 millones
+# (p. ej. la universidad que certifica una competencia trae su RUT antes que el RUN del postulante)
+RUT_MAX_PERSONA = 50_000_000
+
+
+def es_rut_persona(rut: str | None) -> bool:
+    n = normalizar_rut(rut or "")
+    return bool(n) and int(n.split("-")[0]) < RUT_MAX_PERSONA
+
+
 def rut_valido(rut: str | None) -> bool:
     n = normalizar_rut(rut or "")
     if not n:
@@ -96,8 +106,9 @@ def formatear_rut(rut_normalizado: str) -> str:
 # --- Fechas -----------------------------------------------------------------------------------
 
 _RE_FECHAS = [
-    # 16 oct 2028 · 16 de octubre de 2028 · 16-OCT-2028 · 16deoctubrede2026 (PDF sin espacios)
-    (re.compile(r"(?<!\d)(\d{1,2})\s*(?:de\s*|[-/.\s])\s*([a-zA-ZáéíóúÁÉÍÓÚ]{3,10}?)\.?\s*(?:de\s*|[-/.\s])\s*(\d{4})\b", re.I), "dmy_texto"),
+    # 16 oct 2028 · 16 de octubre de 2028 · 16-OCT-2028 · 16deoctubrede2026 (PDF sin espacios) · 17 OCT2022 (cédula leída
+    # por OCR: mes y año pegados; el año exige 4 dígitos seguidos de un no dígito, así "20 sep22026" no es fecha)
+    (re.compile(r"(?<!\d)(\d{1,2})\s*(?:de\s*|[-/.\s])\s*([a-zA-ZáéíóúÁÉÍÓÚ]{3,10}?)\.?\s*(?:de\s*|[-/.\s])?\s*(\d{4})\b", re.I), "dmy_texto"),
     # 2026-10-21
     (re.compile(r"\b(\d{4})-(\d{2})-(\d{2})\b"), "ymd"),
     # 21/10/2026 · 21-10-2026 · 21.10.2026

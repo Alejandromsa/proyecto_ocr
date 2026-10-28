@@ -67,6 +67,14 @@ doc = Procesador().procesar("archivo.pdf", expediente="12794536-5")
 print(doc.resumen, [s.detalle for s in doc.senales])
 ```
 
+## Convocatorias de SharePoint
+
+El mockup `stracon.validacion.documental` pide analizar una convocatoria completa (`<biblioteca>/<convocatoria>/<cargo>/<postulante>/<archivos>`):
+`POST /convocatorias` (202), `GET /convocatorias/{id}` (avance) y `GET /convocatorias/{id}/resultados` (cargos, postulantes, documentos y
+contraste por postulante). El servicio lee SharePoint por el flujo de Power Automate (`listDeepest` y `getFile`), procesa cada archivo con los
+mismos trabajadores de la API y deja el resultado en JSON bajo `SOCR_RESULTADOS`. La URL del flujo es un secreto: llega en cada petición y no
+se guarda ni se escribe en logs, JSON ni mensajes de error. Contrato y reglas en [docs/api-convocatorias.md](docs/api-convocatorias.md).
+
 ## Configuración (variables de entorno)
 
 | Variable | Defecto | Uso |
@@ -79,11 +87,14 @@ print(doc.resumen, [s.detalle for s in doc.senales])
 | `SOCR_TRABAJADORES` | `2` | Procesos de trabajo de la API: documentos que se procesan a la vez; el resto espera en cola sin errores. `0` = en el mismo proceso |
 | `SOCR_HILOS_OCR` | `-1` | Hilos del OCR por proceso; `-1` = la mitad de los núcleos lógicos repartida entre los trabajadores |
 | `SOCR_CORS` | `*` | Orígenes permitidos para la webapp, separados por coma |
-| `SOCR_MAX_MB` | `25` | Tamaño máximo por archivo en la API |
+| `SOCR_MAX_MB` | `25` | Tamaño máximo por archivo: subidas a la API y archivos que se descargan de una convocatoria (los mayores quedan `omitido`) |
+| `SOCR_RESULTADOS` | `datos/resultados` | Raíz de los JSON por convocatoria (`<id>/convocatoria.json`, `<id>/<cargo>/<postulante>/<archivo>.json`); puede contener datos personales y no se versiona |
+| `SOCR_FLUJO_HOSTS` | `logic.azure.com,powerplatform.com` | Dominios permitidos para la URL del flujo de Power Automate de las convocatorias. Solo para pruebas locales se puede agregar `127.0.0.1` o `localhost` (únicos hosts que aceptan http) |
 | `SOCR_REGLAS` | `src/stracon_ocr/reglas.json` | Umbrales, editores sospechosos, formatos de folio, fuentes |
 
-Los formatos de folio y código de `reglas.json` son los de los documentos **ficticios** del mockup: hay que
-reemplazarlos por los reales de cada emisor antes de producción.
+Los formatos de folio y código de `reglas.json` son los del Registro Civil real (folio de 12 dígitos y código de 12
+hexadecimales). Los de otros emisores (Mineduc, instituciones) aún no tienen regla: ver `docs/formatos-emisores.md`.
+Los folios ficticios de `datos/dorado` solo existen en las pruebas (`reglas_mockup` en `tests/conftest.py`).
 
 ## Estructura
 
@@ -95,7 +106,8 @@ src/stracon_ocr/
   codigos.py       QR, PDF417, MRZ                         clasificacion.py · extraccion.py · tipos/ (6 tipos)
   forense/         pdf_metadatos, pdf_estructura, docx, imagen, ocr_senales
   validacion.py · contraste.py · llm.py (Ollama opcional)
-  almacen/         repositorio.py (interfaz), sqlite.py
+  almacen/         repositorio.py (interfaz), sqlite.py, resultados.py (JSON por convocatoria: interfaz ResultadosJSON)
+  convocatorias.py · flujo.py   análisis de convocatorias completas de SharePoint (cliente del flujo de Power Automate)
   api.py · vista.py · web/index.html · cli.py · reglas.json
 herramientas/generar_verdad_mockup.py   datos/dorado/ (PDF del mockup)   tests/
 ```

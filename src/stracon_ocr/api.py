@@ -9,21 +9,28 @@ import logging
 import uuid
 from concurrent.futures import Future
 from contextlib import asynccontextmanager
+from datetime import date
 from functools import partial
 from importlib.resources import files
 from typing import Annotated, Any
 
-from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, Response
+from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
 from . import __version__, motores, vista
+from .almacen.resultados import ArchivosJSON
 from .config import Config, cargar
+from .convocatorias import ServicioConvocatorias, validar_solicitud
 from .contrato import CONTRATO_VERSION, Documento, Expediente, esquema_json
 from .ingesta import FormatoNoSoportado
 from .motores import MotorNoDisponible
 from .motores.tesseract import ejecutable as ejecutable_tesseract
+from .flujo import Transporte
 from .pipeline import Procesador
 from .tipos import TIPOS
 from .trabajadores import Grupo
@@ -32,17 +39,30 @@ log = logging.getLogger(__name__)
 TIPOS_MIME = {"pdf_nativo": "application/pdf", "pdf_escaneado": "application/pdf", "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
 
 
-def crear_app(cfg: Config | None = None) -> FastAPI:
+class SolicitudConvocatoria(BaseModel):
+    """Cuerpo de `POST /convocatorias`. Los campos son `Any` a propósito: la validación (con mensajes en español, sin repetir
+    la URL del flujo, que es un secreto) la hace `convocatorias.validar_solicitud`."""
+
+    flujo_url: Any = Field(None, description="URL HTTPS del flujo de Power Automate (*.logic.azure.com o *.powerplatform.com). Secreta: no se guarda")
+    sitio_url: Any = Field(None, description="https://<tenant>.sharepoint.com/sites/<sitio>")
+    ruta: Any = Field(None, description="/sites/<sitio>/<biblioteca>/<carpeta de la convocatoria>")
+    nombre: Any = Field(None, description="Opcional; por defecto el último tramo de la ruta")
+
+
+def crear_app(cfg: Config | None = None, *, transporte_flujo: Transporte | None = None, hoy: date | None = None) -> FastAPI:
+    """`transporte_flujo` y `hoy` son para las pruebas (flujo falso sin red; fecha de referencia de las vigencias)."""
     cfg = cfg or cargar()
     proc = Procesador(cfg)
     repo = proc.repo
     # procesos de trabajo: varios documentos a la vez; los demás esperan en cola sin bloquear la API
     grupo = Grupo(cfg, proc)
+    convocatorias = ServicioConvocatorias(cfg, proc, grupo, ArchivosJSON(cfg.resultados), transporte=transporte_flujo, hoy=hoy)
 
     @asynccontextmanager
     async def ciclo(_app: FastAPI):
         await asyncio.to_thread(grupo.calentar)
         yield
+        await asyncio.to_thread(convocatorias.cerrar)
         grupo.cerrar()
 
     app = FastAPI(
@@ -54,6 +74,16 @@ def crear_app(cfg: Config | None = None) -> FastAPI:
     )
     app.add_middleware(CORSMiddleware, allow_origins=cfg.cors, allow_methods=["*"], allow_headers=["*"])
     app.state.procesador = proc
+    app.state.convocatorias = convocatorias
+
+    @app.exception_handler(RequestValidationError)
+    async def _validacion(request: Request, exc: RequestValidationError):
+        if not request.url.path.startswith("/convocatorias"):
+            return await request_validation_exception_handler(request, exc)
+        # en /convocatorias el cuerpo lleva la URL del flujo (secreto): el error nunca devuelve el valor recibido
+        return JSONResponse(status_code=422, content={"detail": [
+            {"loc": list(e.get("loc", [])), "msg": "El cuerpo de la petición debe ser un objeto JSON válido.", "type": "value_error"}
+            for e in exc.errors()]})
 
     async def _leer(archivo: UploadFile) -> bytes:
         datos = await archivo.read()
@@ -222,6 +252,31 @@ def crear_app(cfg: Config | None = None) -> FastAPI:
         if incluir_documento and t.get("documento_id"):
             t["documento"] = repo.obtener_documento(t["documento_id"])
         return t
+
+    # --- convocatorias de SharePoint (ver docs/api-convocatorias.md) ------------------------------------
+
+    @app.post("/convocatorias", status_code=202, tags=["convocatorias"],
+              summary="Analiza una convocatoria completa de SharePoint (o la actualiza de forma incremental)")
+    def crear_convocatoria(cuerpo: SolicitudConvocatoria) -> dict[str, Any]:
+        sol, errores = validar_solicitud(cuerpo.model_dump(), cfg)
+        if sol is None:
+            raise HTTPException(422, errores)
+        return convocatorias.iniciar(sol)
+
+    @app.get("/convocatorias/{cid}", tags=["convocatorias"], summary="Avance del análisis de una convocatoria")
+    def progreso_convocatoria(cid: str) -> dict[str, Any]:
+        p = convocatorias.progreso(cid)
+        if p is None:
+            raise HTTPException(404, "Convocatoria no encontrada")
+        return p
+
+    @app.get("/convocatorias/{cid}/resultados", tags=["convocatorias"],
+             summary="Cargos, postulantes, documentos (DocumentoVista) y expedientes; parciales mientras analiza")
+    def resultados_convocatoria(cid: str) -> dict[str, Any]:
+        r = convocatorias.resultados(cid)
+        if r is None:
+            raise HTTPException(404, "Convocatoria no encontrada")
+        return r
 
     # --- expedientes ----------------------------------------------------------------------------
 

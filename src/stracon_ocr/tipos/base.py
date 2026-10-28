@@ -22,8 +22,10 @@ class CampoSpec:
 
 
 NOMBRE = CampoSpec("nombre", ("Nombre", "Nombre completo", "Nombres y apellidos", "Titular", "Nombre del titular"), "nombre", clave=True)
-# los rótulos con puntos van primero: "RUN" sin puntos también calza con cabeceras de tabla ("R U N | FINES")
-RUT = CampoSpec("rut", ("R.U.N.", "R.U.T.", "RUT", "RUN", "Cédula de identidad N°"), "rut", clave=True)
+# los rótulos con puntos van primero: "RUN" sin puntos también calza con cabeceras de tabla ("R U N | FINES").
+# "RUN" antes que "RUT": las personas se rotulan RUN y las instituciones RUT (un certificado de competencias trae el RUT
+# de la universidad y el de su representante legal antes del RUN del postulante)
+RUT = CampoSpec("rut", ("R.U.N.", "RUN", "R.U.T.", "RUT", "Cédula de identidad N°", "Carné de identidad N°", "C.I."), "rut", clave=True)
 
 
 @dataclass(frozen=True)
@@ -41,6 +43,9 @@ class TipoSpec:
     completar: Callable[..., dict] | None = None
     # mínimo para validar el documento: si falta alguno, el documento queda Observado (pedir reenvío)
     obligatorios: tuple[str, ...] = ()
+    # frases que por sí solas identifican el tipo aunque el documento repita el título de otro (la copia de verificación
+    # dice «CERTIFICADO DE ANTECEDENTES» pero también «Copia no válida como certificado»)
+    decisivas: tuple[str, ...] = ()
 
     def campo(self, nombre: str) -> CampoSpec | None:
         return next((c for c in self.campos if c.nombre == nombre), None)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import date
 from pathlib import Path
 
@@ -20,8 +21,22 @@ def mockup(relativo: str) -> Path:
 
 
 @pytest.fixture(scope="session")
-def proc_sin_bd() -> Procesador:
-    return Procesador(Config(), guardar=False)
+def reglas_mockup(tmp_path_factory) -> Path:
+    """Reglas de producción más los formatos de folio y código ficticios de los PDF de datos/dorado (no forman parte de reglas.json)."""
+    reglas = json.loads(Config().reglas.read_text(encoding="utf-8"))
+    for tipo in ("certificado_antecedentes", "hoja_vida_conductor"):
+        reglas["formatos"][f"{tipo}.folio"] = "^(\\d{12}|\\d{3}-\\d{3}-\\d{4})$"
+        reglas["formatos"][f"{tipo}.codigo_verificacion"] = "^([0-9A-F]{12}|[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4})$"
+    ruta = tmp_path_factory.mktemp("reglas") / "reglas_mockup.json"
+    ruta.write_text(json.dumps(reglas, ensure_ascii=False), encoding="utf-8")
+    return ruta
+
+
+@pytest.fixture(scope="session")
+def proc_sin_bd(reglas_mockup: Path) -> Procesador:
+    cfg = Config()
+    cfg.reglas = reglas_mockup  # los PDF ficticios traen folios con el formato del mockup
+    return Procesador(cfg, guardar=False)
 
 
 @pytest.fixture()

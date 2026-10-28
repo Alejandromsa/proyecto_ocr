@@ -12,7 +12,8 @@ Para cada documento con un RUT ubicado en la página se cambia un dígito del RU
     foto_editada_exif      se pinta el RUT nuevo sobre la imagen y se guarda con EXIF de Photoshop
     foto_editada           igual, sin metadatos (lo que haría alguien cuidadoso)
 
-Una alteración se cuenta como detectada si aparece al menos una de sus señales esperadas con severidad media o alta.
+Una alteración se cuenta como detectada si aparece al menos una de sus señales esperadas con severidad media o alta
+(o, en el rasterizado, la observación de pedir el PDF original).
 Los originales deben salir sin señales media o alta.
 
 Uso: python herramientas/prueba_alteraciones.py <carpeta con documentos> <carpeta de salida> [--hoy 2026-10-22]
@@ -43,7 +44,7 @@ ESPERADAS = {
     "incremental_tapado": ["pdf.revisiones_incrementales", "pdf.cambios_post_firma", "pdf.objeto_tapa_texto", "pdf.texto_superpuesto", "codigo.no_coincide"],
     "reescrito_tapado": ["pdf.objeto_tapa_texto", "pdf.texto_superpuesto", "pdf.firma_invalida", "codigo.no_coincide"],
     "digito_encimado": ["pdf.texto_superpuesto", "pdf.fuentes_mezcladas_campo", "pdf.firma_invalida", "codigo.no_coincide"],
-    "rasterizado": ["pdf.solo_imagen", "pdf.firma_invalida"],
+    "rasterizado": ["pdf.solo_imagen", "pdf.firma_invalida", "contenido.imagen_de_electronico"],
     "foto_editada_exif": ["img.exif_editor", "codigo.no_coincide"],
     "foto_editada": ["codigo.no_coincide", "rut.inconsistente", "img.ela_zona", "ocr.confianza_anomala", "ocr.motores_discrepan"],
 }
@@ -187,8 +188,14 @@ def _productor(origen: Path, productor: str) -> bytes:
     return buf.getvalue()
 
 
+# observaciones que también cuentan como detección: un PDF electrónico convertido en imagen es indistinguible de un
+# escaneo legítimo; desde la calibración de oct 2026 no es señal media sino que se pide el original (Observado)
+OBSERVACIONES_DETECCION = {"contenido.imagen_de_electronico"}
+
+
 def senales_relevantes(d: Documento) -> set[str]:
-    return {s.id for s in d.senales if ORDEN_SEVERIDAD[s.severidad] >= ORDEN_SEVERIDAD["media"]}
+    return ({s.id for s in d.senales if ORDEN_SEVERIDAD[s.severidad] >= ORDEN_SEVERIDAD["media"]}
+            | {o.id for o in d.observaciones if o.id in OBSERVACIONES_DETECCION})
 
 
 def main() -> None:
@@ -205,8 +212,8 @@ def main() -> None:
     for origen in sorted(f for f in a.entrada.rglob("*") if f.is_file() and f.suffix.lower() in EXTENSIONES):
         d = proc.procesar(origen, guardar=False, hoy=hoy)
         filas.append({"archivo": f"{origen.parent.name}/{origen.name}", "alteracion": "original", "tipo": d.clasificacion.tipo,
-                      "esperado": [], "hallado": sorted(senales_relevantes(d)), "detectado": None,
-                      "falso_positivo": bool(senales_relevantes(d))})
+                      "esperado": [], "hallado": sorted(senales_relevantes(d) - OBSERVACIONES_DETECCION), "detectado": None,
+                      "falso_positivo": bool(senales_relevantes(d) - OBSERVACIONES_DETECCION)})
         for archivo, alteracion in generar(proc, origen, a.salida, hoy).items():
             dv = proc.procesar(a.salida / archivo, guardar=False, hoy=hoy)
             hallado = senales_relevantes(dv)

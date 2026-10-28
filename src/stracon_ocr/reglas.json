@@ -1,5 +1,5 @@
 {
-  "version": "2026.10.22",
+  "version": "2026.10.29",
   "umbrales": {
     "palabras_min_pdf_nativo": 5,
     "cer_campo_nativo_ocr": 0.34,
@@ -8,7 +8,7 @@
     "confianza_min_campo": 0.8,
     "segundos_mod_creacion": 120,
     "dias_vigencia_antecedentes": 60,
-    "nombre_discrepancia": 0.90,
+    "nombre_discrepancia": 0.9,
     "nombre_posible_tipeo": 0.97,
     "phash_distancia_pagina": 2,
     "ela_ratio_zona": 2.5
@@ -19,7 +19,7 @@
     "confianza_debil": 0.88,
     "palabras_min": 6,
     "puntaje_min": 5,
-    "confianza_min": 0.70,
+    "confianza_min": 0.7,
     "palabras_legible": 12,
     "confianza_legible": 0.85,
     "fraccion_conf_baja_max": 0.35,
@@ -32,31 +32,95 @@
     "lado_min_px": 900
   },
   "productores_editores": [
-    "ilovepdf", "smallpdf", "sejda", "pdfescape", "pdf24", "photoshop", "illustrator", "gimp", "canva",
-    "microsoft word", "microsoft: print to pdf", "microsoft print to pdf", "wps", "foxit phantompdf", "foxit pdf editor",
-    "nitro", "pdfelement", "wondershare", "soda pdf", "pdf-xchange editor", "inkscape", "libreoffice", "openoffice",
-    "adobe acrobat pro", "acrobat pro dc", "pdffiller", "dochub", "camscanner"
+    "ilovepdf",
+    "smallpdf",
+    "sejda",
+    "pdfescape",
+    "pdf24",
+    "photoshop",
+    "illustrator",
+    "gimp",
+    "canva",
+    "microsoft word",
+    "microsoft: print to pdf",
+    "microsoft print to pdf",
+    "wps",
+    "foxit phantompdf",
+    "foxit pdf editor",
+    "nitro",
+    "pdfelement",
+    "wondershare",
+    "soda pdf",
+    "pdf-xchange editor",
+    "inkscape",
+    "libreoffice",
+    "openoffice",
+    "adobe acrobat pro",
+    "acrobat pro dc",
+    "pdffiller",
+    "dochub",
+    "camscanner"
   ],
   "software_imagen_editores": [
-    "photoshop", "gimp", "lightroom", "snapseed", "picsart", "canva", "pixlr", "affinity", "paint.net", "facetune", "remini"
+    "photoshop",
+    "gimp",
+    "lightroom",
+    "snapseed",
+    "picsart",
+    "canva",
+    "pixlr",
+    "affinity",
+    "paint.net",
+    "facetune",
+    "remini"
   ],
-  "tipos_emitidos_como_pdf_nativo": ["certificado_antecedentes", "hoja_vida_conductor"],
-  "tipos_documento_fisico": ["cedula_identidad", "licencia_conducir"],
+  "tipos_emitidos_como_pdf_nativo": [
+    "certificado_antecedentes",
+    "hoja_vida_conductor",
+    "validacion_emisor"
+  ],
+  "tipos_documento_fisico": [
+    "cedula_identidad",
+    "licencia_conducir"
+  ],
   "tipos_oficiales": [
-    "cedula_identidad", "licencia_conducir", "certificado_estudios_medios",
-    "certificado_estudios_profesionales", "certificado_antecedentes", "hoja_vida_conductor"
+    "cedula_identidad",
+    "licencia_conducir",
+    "certificado_estudios_medios",
+    "certificado_estudios_profesionales",
+    "certificado_antecedentes",
+    "hoja_vida_conductor"
   ],
   "formatos": {
-    "certificado_antecedentes.codigo_verificacion": "^([0-9A-F]{12}|[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4})$",
-    "certificado_antecedentes.folio": "^(\\d{12}|\\d{3}-\\d{3}-\\d{4})$",
-    "hoja_vida_conductor.codigo_verificacion": "^([0-9A-F]{12}|[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4})$",
-    "hoja_vida_conductor.folio": "^(\\d{12}|\\d{3}-\\d{3}-\\d{4})$"
+    "certificado_antecedentes.codigo_verificacion": "^[0-9A-F]{12}$",
+    "certificado_antecedentes.folio": "^\\d{12}$",
+    "hoja_vida_conductor.codigo_verificacion": "^[0-9A-F]{12}$",
+    "hoja_vida_conductor.folio": "^\\d{12}$",
+    "validacion_emisor.codigo_verificacion": "^[0-9A-F]{12}$",
+    "validacion_emisor.folio": "^\\d{12}$"
   },
-  "_nota_formatos": "Registro Civil real (verificado con certificados de oct 2026): folio de 12 dígitos y código de 12 hexadecimales. La segunda alternativa de cada patrón es la del mockup (NNN-NNN-NNNN y XXXX-XXXX-XXXX): quitarla en producción. Licencia y CEIM no tienen formato verificado.",
+  "_nota_formatos": "Registro Civil real (verificado con 66 certificados y 6 copias de verificación, oct 2026): folio de 12 dígitos (empieza en 500) y código de verificación de 12 hexadecimales (minúsculas en el PDF; se comparan en mayúsculas). Los formatos ficticios del mockup (NNN-NNN-NNNN y XXXX-XXXX-XXXX) ya no forman parte de las reglas; las pruebas con datos/dorado usan reglas propias (tests/reglas_mockup.json). Otros formatos observados (sin regla, ver docs/formatos-emisores.md): Mineduc código UUID, INACAP 16 hexadecimales, licencia 'CV' + 20 hexadecimales.",
   "verificacion_fuentes": {
-    "certificado_antecedentes": {"fuente": "Registro Civil", "url": "https://www.registrocivil.cl/OficinaInternet/verificacion/verificacioncertificado.srcei"},
-    "hoja_vida_conductor": {"fuente": "Registro Civil", "url": "https://www.registrocivil.cl/OficinaInternet/verificacion/verificacioncertificado.srcei"},
-    "cedula_identidad": {"fuente": "Registro Civil", "url": "https://portal.sidiv.registrocivil.cl/usuarios-portal/pages/DocumentRequestStatus.xhtml"},
-    "certificado_estudios_profesionales": {"fuente": "Institución emisora", "url": null}
-  }
+    "certificado_antecedentes": {
+      "fuente": "Registro Civil",
+      "url": "https://www.registrocivil.cl/OficinaInternet/verificacion/verificacioncertificado.srcei"
+    },
+    "hoja_vida_conductor": {
+      "fuente": "Registro Civil",
+      "url": "https://www.registrocivil.cl/OficinaInternet/verificacion/verificacioncertificado.srcei"
+    },
+    "cedula_identidad": {
+      "fuente": "Registro Civil",
+      "url": "https://portal.sidiv.registrocivil.cl/usuarios-portal/pages/DocumentRequestStatus.xhtml"
+    },
+    "certificado_estudios_profesionales": {
+      "fuente": "Institución emisora",
+      "url": null
+    },
+    "certificado_estudios_medios": {
+      "fuente": "Mineduc",
+      "url": "https://certificados.mineduc.cl/certificados-web/"
+    }
+  },
+  "_nota_verificacion": "Dominios de verificación vistos en los QR reales (oct 2026): certificados.mineduc.cl (Mineduc), portal.sidiv.registrocivil.cl (cédula), certificadovalida.duoc.cl, titulacion.aiep.cl y otros por institución (títulos). Se guardan en codigos[].datos.dominio."
 }

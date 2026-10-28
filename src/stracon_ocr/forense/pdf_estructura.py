@@ -2,7 +2,9 @@
 campos rasterizados, imágenes insertadas sin nitidez y texto nativo distinto de lo visible."""
 from __future__ import annotations
 
+import re
 from collections import Counter
+from itertools import groupby
 from typing import Any
 
 import cv2
@@ -40,8 +42,11 @@ def analizar(doc: DocTrabajo, tipo: str, campos: dict[str, Campo], reglas: dict[
         texto = sin_espacios(normalizar(doc.texto))
         marcas = [m for m in MARCAS_ELECTRONICAS if m in texto]
         if tipo in reglas["tipos_emitidos_como_pdf_nativo"] or marcas:
+            # baja: escanear o imprimir a PDF un certificado electrónico es habitual entre los postulantes y no prueba
+            # una alteración. Lo que corresponde es pedir el original: eso lo hace la observación
+            # contenido.imagen_de_electronico (documento Observado), que se genera con esta señal (calibración oct 2026)
             senales.append(Senal(
-                id="pdf.solo_imagen", familia="estructura", severidad="media",
+                id="pdf.solo_imagen", familia="estructura", severidad="baja",
                 detalle="El PDF no tiene texto: es una imagen de un documento que el emisor entrega como PDF electrónico"
                         + (" (el propio documento dice que fue firmado electrónicamente)" if marcas else "")
                         + ". Se pierde la firma y no se puede verificar su integridad: pedir el PDF original",
@@ -59,6 +64,24 @@ def analizar(doc: DocTrabajo, tipo: str, campos: dict[str, Campo], reglas: dict[
     return senales
 
 
+def familia_fuente(nombre: str) -> str:
+    """'Helvetica-Bold' → 'HELVETICA', 'Arial,BoldItalic' → 'ARIAL', 'TimesNewRomanPS-BoldMT' → 'TIMESNEWROMAN'."""
+    base = re.split(r"[-,]", nombre, maxsplit=1)[0].upper()
+    return re.sub(r"(PSMT|PS|MT)$", "", base) or base
+
+
+def cambio_de_estilo(utiles: list[tuple[str, str, float]]) -> bool:
+    """La palabra cambia de estilo (normal ↔ negrita/cursiva de la misma familia) en tramos de 2+ caracteres y con el
+    mismo tamaño: es la composición del emisor ("Nº" en normal seguido del código en negrita, nombre en negrita pegado
+    a la coma). Un dígito reemplazado deja un tramo de 1 carácter o de otra familia/tamaño, y eso sí se informa."""
+    familias = {familia_fuente(f) for _, f, _ in utiles}
+    tams = [t for _, _, t in utiles]
+    if len(familias) != 1 or max(tams) > 1.15 * min(tams):
+        return False
+    tramos = [len(list(g)) for _, g in groupby(f for _, f, _ in utiles)]
+    return len(tramos) <= 3 and min(tramos) >= 2
+
+
 def fuentes_mezcladas(p: PaginaTrabajo, campos: dict[str, Campo]) -> list[Senal]:
     """Una misma palabra con caracteres de otra tipografía o tamaño: típico de un dígito reemplazado."""
     senales = []
@@ -70,6 +93,8 @@ def fuentes_mezcladas(p: PaginaTrabajo, campos: dict[str, Campo]) -> list[Senal]
         tams = [t for _, _, t in utiles]
         distinto_tam = max(tams) > 1.15 * min(tams)
         if len(fuentes) < 2 and not distinto_tam:
+            continue
+        if cambio_de_estilo(utiles):
             continue
         dominante = fuentes.most_common(1)[0][0]
         mediana = sorted(tams)[len(tams) // 2]
@@ -90,6 +115,10 @@ def texto_superpuesto(p: PaginaTrabajo, campos: dict[str, Campo]) -> list[Senal]
     senales = []
     for s in p.superposiciones:
         visible, debajo = s.texto_visible, s.texto_debajo
+        if not _alfanum(visible) or not _alfanum(debajo):
+            # una coma o un punto que choca con un dígito es composición del emisor (columnas que se tocan), no un
+            # texto reemplazado: para reemplazar un dato hay letras o dígitos en las dos capas
+            continue
         campo = campo_en(campos, p.n, s.bbox)
         senales.append(Senal(
             id="pdf.texto_superpuesto", familia="estructura", severidad="alta", campo=campo, pagina=p.n, bbox=redondear(s.bbox),
@@ -120,6 +149,17 @@ def _visto_por_ocr(p: PaginaTrabajo, palabra) -> bool:
     return objetivo in leido or Levenshtein.normalized_distance(objetivo, leido) < 0.5
 
 
+MIN_PALABRAS_MARCA_AGUA = 8
+
+
+def marca_de_agua(debajo: list, ocultas: list) -> bool:
+    """Imagen translúcida sobre mucho texto (la marca «COPIA NO VÁLIDA COMO CERTIFICADO» del portal de verificación del
+    Registro Civil, un timbre): el texto de abajo se sigue viendo y el OCR solo pierde las palabras que cruzan las letras
+    de la marca. Un parche que oculta un dato tapa pocas palabras, o todas las que cubre."""
+    lineas = {round(w.yc / max(w.alto, 1)) for w in debajo}
+    return len(debajo) >= MIN_PALABRAS_MARCA_AGUA and len(lineas) >= 3 and len(ocultas) < 0.5 * len(debajo)
+
+
 def objetos_que_tapan(p: PaginaTrabajo, campos: dict[str, Campo]) -> list[Senal]:
     """Rectángulos blancos o imágenes encima de texto nativo que no se ve en el render."""
     senales = []
@@ -134,6 +174,8 @@ def objetos_que_tapan(p: PaginaTrabajo, campos: dict[str, Campo]) -> list[Senal]
         if p.ocr:
             ocultas = [w for w in debajo if not _visto_por_ocr(p, w)]
             if not ocultas:
+                continue
+            if marca_de_agua(debajo, ocultas):
                 continue
             sev, detalle = "alta", f"Un {nombre} tapa texto que existe en el PDF pero no se ve: '{' '.join(w.t for w in ocultas)}'"
         else:

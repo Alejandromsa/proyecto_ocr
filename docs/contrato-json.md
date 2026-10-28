@@ -14,7 +14,7 @@ Reglas comunes a todo el contrato:
 {
   "contrato_version": "1.0",
   "id": "uuid",
-  "expediente": "12794536-5",            // RUT del postulante, tomado de la carpeta (opcional)
+  "expediente": "12794536-5",            // id del expediente (opcional): un RUT en datos/dorado o un id opaco por carpeta de postulante
   "archivo": {
     "nombre": "6-certificado-antecedentes.pdf",
     "sha256": "…",
@@ -125,6 +125,12 @@ Métodos de `campos`:
 - `regex`: valor encontrado en una frase del texto (por ejemplo, el primer RUT válido).
 - `ocr`: en un PDF nativo, el valor no existe como texto y se leyó del render (va con la señal `pdf.campo_rasterizado`).
 - `llm`: respaldo opcional con un LLM local; confianza 0,5 y solo si el valor aparece literal en el texto.
+- `mrz`: en la cédula, el valor no se leyó en el anverso y se tomó de la MRZ con su dígito de control correcto.
+
+Regla de identidad del expediente: `expediente` puede ser un id opaco (no se asume que sea un RUT). Solo si tiene forma
+de RUT válido se usa como RUT de referencia; si no, `identidad.rut` es el de la cédula o el más repetido entre los
+documentos, e `identidad.nombre` es el nombre mejor respaldado (grupos de nombres compatibles; a igualdad, el del texto
+nativo del emisor) y en su versión más completa.
 
 ## Expediente (contraste entre documentos)
 
@@ -175,7 +181,22 @@ Campos implementados (`src/stracon_ocr/tipos/`). Todos tienen además `nombre` y
 | `certificado_estudios_medios` | Certificado de estudios medios | establecimiento, **anio_egreso**, **folio**, promedio, fecha_emision |
 | `certificado_estudios_profesionales` | Certificado de estudios profesionales | **numero_certificado**, institucion, titulo, area, fecha_titulacion, **fecha_emision**, **vigencia** |
 | `certificado_antecedentes` | Certificado de antecedentes | **folio**, **codigo_verificacion**, **fecha_emision**, resultado (`Sin antecedentes` / `Con antecedentes`), fines (`ESPECIALES` / `PARTICULARES`) |
-| `hoja_vida_conductor` | Hoja de vida del conductor | **folio**, **codigo_verificacion**, **clases**, **fecha_control**, fecha_emision, anotaciones |
+| `hoja_vida_conductor` | Hoja de vida del conductor | **folio**, **codigo_verificacion**, **clases**, **fecha_control** (solo si la trae: en las reales aparece únicamente en licencias de duración restringida), fecha_emision, anotaciones |
+| `validacion_emisor` | Copia de verificación del emisor (portal del Registro Civil: el certificado con la marca «COPIA» y «Copia no válida como certificado»). No es obligatoria ni cuenta como el certificado | **folio**, **codigo_verificacion**, fecha_emision, documento_verificado (`certificado_antecedentes` / `hoja_vida_conductor`) |
 | `desconocido` | Sin clasificar | — |
 
 Los rótulos que reconoce cada campo están en el mismo archivo del tipo (por ejemplo, "N° de documento", "Número de documento").
+
+Notas de la calibración con documentos reales (oct 2026):
+- Cédula (formato 2013 en adelante): `numero_documento` es el patrón impreso `XXX.XXX.XXX` (9 caracteres, puede empezar
+  con letras); las fechas se ordenan nacimiento < emisión < vencimiento y la MRZ las confirma. `nombre` = nombres +
+  apellidos (la MRZ completa un apellido perdido).
+- Licencia: dos formatos (tarjeta antigua con la clase arriba; tarjeta nueva con la tabla CLASE | PRIMER | ACTUAL
+  OTORGAMIENTO | PRÓXIMO CONTROL). En la nueva, `clases` son las filas con fechas, `fecha_emision` el otorgamiento
+  actual más reciente y `fecha_vencimiento` el próximo control más lejano.
+- Los títulos de técnico de nivel medio del Mineduc («Certificado de título técnico profesional») se clasifican como
+  `certificado_estudios_medios`.
+- El RUT del postulante es el de una persona natural (< 50.000.000) y se prefiere el rotulado «RUN»: el RUT de la
+  institución emisora o de su representante no se toma.
+- Un archivo con más de un documento (p. ej. cédula y licencia) se clasifica por el principal y lleva la observación
+  `contenido.varios_documentos` con los otros tipos y sus páginas en `evidencia.otros`.

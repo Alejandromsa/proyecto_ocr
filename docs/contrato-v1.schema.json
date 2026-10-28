@@ -13,6 +13,7 @@
               "certificado_estudios_profesionales",
               "certificado_antecedentes",
               "hoja_vida_conductor",
+              "validacion_emisor",
               "desconocido"
             ],
             "title": "Tipo",
@@ -248,6 +249,7 @@
               "certificado_estudios_profesionales",
               "certificado_antecedentes",
               "hoja_vida_conductor",
+              "validacion_emisor",
               "desconocido"
             ],
             "title": "Tipo",
@@ -368,6 +370,98 @@
         "title": "ErrorEtapa",
         "type": "object"
       },
+      "Observacion": {
+        "description": "El documento no se puede validar bien. No es una adulteración: el revisor gestiona una aclaración con el postulante\n(en el mockup: estado «Observado» → «Solicitar aclaración»).",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "motivo": {
+            "enum": [
+              "calidad",
+              "incompleto",
+              "no_reconocido",
+              "archivo",
+              "vigencia",
+              "no_verificable",
+              "faltante"
+            ],
+            "title": "Motivo",
+            "type": "string"
+          },
+          "detalle": {
+            "title": "Detalle",
+            "type": "string"
+          },
+          "accion": {
+            "enum": [
+              "solicitar_reenvio",
+              "solicitar_original",
+              "solicitar_documento",
+              "solicitar_vigente",
+              "revisar"
+            ],
+            "title": "Accion",
+            "type": "string"
+          },
+          "mensaje_postulante": {
+            "title": "Mensaje Postulante",
+            "type": "string"
+          },
+          "documento": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Documento"
+          },
+          "campo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Campo"
+          },
+          "pagina": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Pagina"
+          },
+          "evidencia": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Evidencia",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "motivo",
+          "detalle",
+          "accion",
+          "mensaje_postulante"
+        ],
+        "title": "Observacion",
+        "type": "object"
+      },
       "OcrComparado": {
         "properties": {
           "motor": {
@@ -456,6 +550,12 @@
               }
             ],
             "default": null
+          },
+          "calidad": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Calidad",
+            "type": "object"
           }
         },
         "required": [
@@ -683,6 +783,12 @@
             ],
             "default": null,
             "title": "Detalle"
+          },
+          "evidencia": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Evidencia",
+            "type": "object"
           }
         },
         "required": [
@@ -795,6 +901,14 @@
           "$ref": "#/$defs/Senal"
         },
         "title": "Senales",
+        "type": "array"
+      },
+      "observaciones": {
+        "default": [],
+        "items": {
+          "$ref": "#/$defs/Observacion"
+        },
+        "title": "Observaciones",
         "type": "array"
       },
       "validaciones": {
@@ -923,6 +1037,7 @@
               "certificado_estudios_profesionales",
               "certificado_antecedentes",
               "hoja_vida_conductor",
+              "validacion_emisor",
               "desconocido"
             ],
             "title": "Tipo",
@@ -1089,6 +1204,98 @@
         },
         "title": "Identidad",
         "type": "object"
+      },
+      "Observacion": {
+        "description": "El documento no se puede validar bien. No es una adulteración: el revisor gestiona una aclaración con el postulante\n(en el mockup: estado «Observado» → «Solicitar aclaración»).",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "motivo": {
+            "enum": [
+              "calidad",
+              "incompleto",
+              "no_reconocido",
+              "archivo",
+              "vigencia",
+              "no_verificable",
+              "faltante"
+            ],
+            "title": "Motivo",
+            "type": "string"
+          },
+          "detalle": {
+            "title": "Detalle",
+            "type": "string"
+          },
+          "accion": {
+            "enum": [
+              "solicitar_reenvio",
+              "solicitar_original",
+              "solicitar_documento",
+              "solicitar_vigente",
+              "revisar"
+            ],
+            "title": "Accion",
+            "type": "string"
+          },
+          "mensaje_postulante": {
+            "title": "Mensaje Postulante",
+            "type": "string"
+          },
+          "documento": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Documento"
+          },
+          "campo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Campo"
+          },
+          "pagina": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Pagina"
+          },
+          "evidencia": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Evidencia",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "motivo",
+          "detalle",
+          "accion",
+          "mensaje_postulante"
+        ],
+        "title": "Observacion",
+        "type": "object"
       }
     },
     "properties": {
@@ -1149,15 +1356,29 @@
         "title": "Duplicados",
         "type": "array"
       },
+      "observaciones": {
+        "default": [],
+        "items": {
+          "$ref": "#/$defs/Observacion"
+        },
+        "title": "Observaciones",
+        "type": "array"
+      },
       "procesado_en": {
         "format": "date-time",
         "title": "Procesado En",
+        "type": "string"
+      },
+      "estado": {
+        "readOnly": true,
+        "title": "Estado",
         "type": "string"
       }
     },
     "required": [
       "expediente",
-      "procesado_en"
+      "procesado_en",
+      "estado"
     ],
     "title": "Expediente",
     "type": "object"

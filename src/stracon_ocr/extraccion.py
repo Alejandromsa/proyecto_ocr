@@ -11,7 +11,8 @@ from typing import Any
 
 from .contrato import Campo
 from .layout import Segmento, agrupar, redondear
-from .texto import RE_RUT, buscar_anio, normalizar, normalizar_fecha, normalizar_rut, rut_valido, sin_espacios, sin_tildes
+from .texto import (RE_RUT, buscar_anio, buscar_fecha, es_rut_persona, normalizar, normalizar_fecha, normalizar_rut, rut_valido,
+                    sin_espacios, sin_tildes)
 from .tipos import TIPOS, CampoSpec, TipoSpec
 from .trabajo import DocTrabajo, PaginaTrabajo
 
@@ -67,7 +68,9 @@ def valor_cercano(rotulo: Segmento, segmentos: list[Segmento], etiquetas: set[st
         return min(derecha, key=lambda s: s.bbox[0])
     debajo = []
     for s in candidatos:
-        if not (y1 - 0.3 * h <= s.bbox[1] <= y1 + 3.5 * h):
+        # por el centro: en escaneos el valor (más alto o corrido) empieza antes de que termine el rótulo
+        # ("Código Verificación:" con el código alineado a la derecha, medio renglón más abajo)
+        if not (_yc(s) > _yc(rotulo) + 0.4 * h and s.bbox[1] <= y1 + 3.5 * h):
             continue
         cruce = min(s.bbox[2], x1) - max(s.bbox[0], x0)
         if abs(s.bbox[0] - x0) < 3 * h or cruce > 0.5 * min(s.bbox[2] - s.bbox[0], x1 - x0):
@@ -129,6 +132,10 @@ def _campo(spec: CampoSpec, tipo: TipoSpec, valor_seg: Segmento | None, texto: s
         texto = valor_seg.texto
     if spec.clase == "rut" and (m := RE_RUT.search(texto)):
         texto = m.group(0)
+    elif spec.clase == "anio" and (anio := buscar_anio(texto)):
+        texto = anio  # "1998 el Segundo Ciclo G" → "1998": la caja y la comparación con el OCR quedan en el dato
+    elif spec.clase == "fecha" and (f := buscar_fecha(texto)) and len(texto) > len(f[1]) + 3:
+        texto = f[1]
     if valor_seg is not None and valor_seg.texto != texto:
         valor_seg = ajustar_a_valor(valor_seg, texto)
     con_caja = valor_seg is not None and pagina is not None and pagina.fuente_texto != "docx"
@@ -155,13 +162,31 @@ def _ubicar(doc: DocTrabajo, valor: str) -> tuple[Segmento | None, PaginaTrabajo
 
 
 def _aceptable(spec: CampoSpec, texto: str) -> bool:
-    """Un valor de clase estricta tiene que poder interpretarse (un RUT que no es RUT es otro dato)."""
-    return spec.clase not in {"rut", "fecha", "anio", "clases"} or normalizar_valor(spec.clase, texto) is not None
+    """Un valor de clase estricta tiene que poder interpretarse (un RUT que no es RUT es otro dato; un código sin dígitos
+    es un rótulo vecino, como "FECHA DE VENCIMIENTO" leído bajo "N° documento"). El RUT del postulante es el de una
+    persona natural: el RUT de la institución emisora (50 millones o más) no cuenta."""
+    if spec.clase == "rut":
+        return normalizar_valor("rut", texto) is not None and es_rut_persona(texto)
+    return spec.clase not in {"fecha", "anio", "clases", "codigo"} or normalizar_valor(spec.clase, texto) is not None
+
+
+def _orden_alias(spec: CampoSpec) -> list[str]:
+    """Rótulos en el orden del tipo, pero cada uno después de los más largos que lo contienen ("Establecimiento
+    educacional" antes que "Establecimiento"; "R.U.N." y "RUN" antes que "RUT", que también usan las instituciones)."""
+    alias = list(spec.etiquetas_norm)
+    orden: list[str] = []
+    for a in alias:
+        for b in sorted((b for b in alias if b != a and sin_espacios(a) in sin_espacios(b)), key=len, reverse=True):
+            if b not in orden:
+                orden.append(b)
+        if a not in orden:
+            orden.append(a)
+    return orden
 
 
 def por_rotulo(doc: DocTrabajo, spec: CampoSpec, tipo: TipoSpec, etiquetas: set[str]) -> Campo | None:
     """Rótulo que ocupa su propio segmento, con el valor a la derecha o debajo."""
-    for alias in spec.etiquetas_norm:
+    for alias in _orden_alias(spec):
         alias_ns = sin_espacios(alias)
         for p in doc.paginas:
             for seg in p.segmentos:
@@ -179,8 +204,8 @@ def por_rotulo(doc: DocTrabajo, spec: CampoSpec, tipo: TipoSpec, etiquetas: set[
 
 
 def por_rotulo_en_linea(doc: DocTrabajo, spec: CampoSpec, tipo: TipoSpec, etiquetas: set[str]) -> Campo | None:
-    """Rótulo y valor en la misma línea; los rótulos más largos primero ("Establecimiento educacional" antes que "Establecimiento")."""
-    for alias in sorted(spec.etiquetas_norm, key=len, reverse=True):
+    """Rótulo y valor en la misma línea, en el orden de `_orden_alias`."""
+    for alias in _orden_alias(spec):
         alias_ns = sin_espacios(alias)
         for p in doc.paginas:
             for seg in p.segmentos:
@@ -204,13 +229,22 @@ def por_regex(doc: DocTrabajo, spec: CampoSpec, tipo: TipoSpec) -> Campo | None:
             texto = ", ".join(sorted(set(normalizar_valor("clases", " ".join(encontradas)) or [])))
             return _campo(spec, tipo, primera[0], texto, "regex", "clases", f"{len(encontradas)} línea(s) 'Clase'", primera[1])
         return None
+    if spec.clase == "rut":
+        # el primer RUT válido de una persona; si alguno va precedido de "RUN" (así se rotula a las personas), ese
+        candidatos = []
+        for p in doc.paginas:
+            for seg in p.segmentos:
+                for m in RE_RUT.finditer(seg.texto):
+                    if rut_valido(m.group(0)) and es_rut_persona(m.group(0)):
+                        antes = sin_espacios(normalizar(seg.texto[max(0, m.start() - 12):m.start()]))
+                        candidatos.append((0 if "RUN" in antes else 1, len(candidatos), m.group(0), seg, p))
+        if candidatos:
+            _, _, valor, seg, p = min(candidatos, key=lambda c: c[:2])
+            return _campo(spec, tipo, seg, valor, "regex", "rut", seg.texto, p)
+        return None
     for p in doc.paginas:
         for seg in p.segmentos:
-            if spec.clase == "rut":
-                m = RE_RUT.search(seg.texto)
-                if m and rut_valido(m.group(0)):
-                    return _campo(spec, tipo, seg, m.group(0), "regex", "rut", seg.texto, p)
-            elif spec.clase in ESTRICTAS - {"codigo"}:
+            if spec.clase in ESTRICTAS - {"codigo", "rut"}:
                 seg_ns = sin_espacios(seg.norm)
                 for alias in spec.etiquetas_norm:
                     alias_ns = sin_espacios(alias)
@@ -231,13 +265,18 @@ def por_regex(doc: DocTrabajo, spec: CampoSpec, tipo: TipoSpec) -> Campo | None:
 
 def por_patron(doc: DocTrabajo, spec: CampoSpec, tipo: TipoSpec) -> Campo | None:
     """Certificados en texto corrido: 'a don(ña) NOMBRE, RUN …', 'el título de … y fue aprobado'."""
-    texto = " ".join(s.texto for p in doc.paginas for s in p.segmentos)
+    segmentos = [s.texto for p in doc.paginas for s in p.segmentos]
+    texto = " ".join(segmentos)
+    lineas = "\n".join(segmentos)  # mismo largo: sirve para cortar el valor en el fin de línea
     for campo, patron in tipo.patrones:
         if campo != spec.nombre:
             continue
         m = re.search(patron, texto, re.I)
         if m and m.group(1).strip(" ,.:"):
-            valor = _sin_repeticion(re.sub(r"\s+", " ", m.group(1).strip(" ,.:")))
+            bruto = m.group(1)
+            if "(?#linea)" in patron:  # el valor no sigue en la línea siguiente (un timbre o firma leído a continuación)
+                bruto = lineas[m.start(1):m.end(1)].split("\n")[0]
+            valor = _sin_repeticion(re.sub(r"\s+", " ", bruto.strip(" ,.:")))
             seg, pag = _ubicar(doc, valor)
             return _campo(spec, tipo, seg if seg and seg.texto != valor else None, valor, "regex", "frase", m.group(0)[:160], pag)
     return None
@@ -262,12 +301,16 @@ def extraer(doc: DocTrabajo, tipo: str) -> dict[str, Campo]:
         if campo:
             campos[c.nombre] = campo
     if spec.completar:
-        def crear(nombre: str, valor: str, evidencia: str, seg: Segmento | None = None) -> Campo:
+        def crear(nombre: str, valor: str, evidencia: str, seg: Segmento | None = None, metodo: str = "regex") -> Campo:
             c = spec.campo(nombre) or CampoSpec(nombre, ())
-            pag = next((p for p in doc.paginas if seg is not None and seg in p.segmentos), None)
-            return _campo(c, spec, seg, valor, "regex", "estructura", evidencia, pag)
+            pag = next((p for p in doc.paginas if seg is not None and (seg in p.segmentos or p.n == seg.pagina)), None)
+            return _campo(c, spec, seg, valor, metodo, "estructura", evidencia, pag)
 
-        campos.update(spec.completar(doc, campos, crear))
+        for nombre, campo in spec.completar(doc, campos, crear).items():
+            if campo is None:
+                campos.pop(nombre, None)  # el tipo descarta un valor que no corresponde (p. ej. un rótulo leído como nombre)
+            else:
+                campos[nombre] = campo
     # nombre completo a partir de nombres y apellidos
     if "nombre" not in campos and "nombres" in campos and "apellidos" in campos:
         n, a = campos["nombres"], campos["apellidos"]

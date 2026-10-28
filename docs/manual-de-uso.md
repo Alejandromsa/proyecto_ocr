@@ -580,7 +580,7 @@ implementación con los mismos métodos y se pasa a `Procesador(repo=...)`. El c
 | 415 con un `.doc` | Falta LibreOffice | Instalarlo, o convertir el archivo a `.docx` o PDF |
 | Un campo no aparece | El rótulo del documento no está en la lista del tipo | Agregarlo ([11.1](#111-agregar-un-rótulo-a-un-campo-existente)) |
 | Tipo `desconocido` o equivocado | El título o las frases no coinciden con las reglas | Indicar el tipo a mano y agregar el título a `titulos` del tipo |
-| `formato.folio` falla en documentos reales | Los formatos son los del mockup | Ajustar `formatos` en `reglas.json` |
+| `formato.folio` falla en documentos reales | El emisor usa un formato distinto del Registro Civil | Ajustar `formatos` en `reglas.json` |
 | Muchas señales `img.ela_zona` en fotos de WhatsApp | La recompresión confunde a ELA | Es severidad baja: ignorarla o subir `ela_ratio_zona` |
 | Errores en `errores[]` del JSON | Falló una etapa; el resto sigue siendo válido | Leer el mensaje; si se repite, reportar con el archivo |
 | Un comando de PowerShell falla con «modo de lenguaje» | PowerShell del equipo está en modo restringido | Usar los comandos de este manual tal cual, o `cmd` |

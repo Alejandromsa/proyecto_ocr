@@ -26,17 +26,29 @@ def analizar(doc: DocTrabajo, tipo: str, campos: dict[str, Campo], reglas: dict[
         if p is None or not c.bbox:
             continue
         leido_por_ocr = p.fuente_texto == "ocr" or c.metodo == "ocr"
-        if leido_por_ocr and len(p.palabras if p.fuente_texto == "ocr" else p.ocr) >= 8:
+        # solo campos clave: en fotos y escaneos los logos, timbres y textos secundarios (dirección, institución) se leen
+        # con confianza baja de forma rutinaria y no son lo que un falsificador cambia (calibración oct 2026)
+        if leido_por_ocr and nombre in claves and len(p.palabras if p.fuente_texto == "ocr" else p.ocr) >= 8:
             base = p.palabras if p.fuente_texto == "ocr" else p.ocr
             confs = [w.conf for w in base]
             media, desv = statistics.mean(confs), statistics.pstdev(confs) or 0.01
-            del_campo = [w for w in base if solape(w.bbox, tuple(c.bbox)) > 0.5]
+            valor = _alfanum(c.valor or "")
+            # solo las palabras que forman el valor (la caja puede abarcar la fila entera, p. ej. en la tabla de clases
+            # de la licencia, y una fecha vecina leída con ruido no dice nada del campo)
+            # y solo las que tienen dígitos: lo que se adultera en una foto son dígitos (RUT, fechas, folios); los meses
+            # abreviados ("oct") y los apellidos poco comunes se leen con confianza baja de forma rutinaria
+            del_campo = [w for w in base if solape(w.bbox, tuple(c.bbox)) > 0.5 and _alfanum(w.t) and _alfanum(w.t) in valor
+                         and any(ch.isdigit() for ch in w.t)]
             if del_campo:
                 peor = min(del_campo, key=lambda w: w.conf)
                 z = (media - peor.conf) / desv
                 if z > u["zscore_confianza"] and peor.conf < u["confianza_min_campo"]:
+                    # en cédulas y licencias fotografiadas los dígitos van sobre el fondo de seguridad (guilloches,
+                    # hologramas) y se leen con confianza 0,5–0,6 de forma rutinaria: ahí es contexto (baja) y lo que
+                    # verifica el valor es la MRZ (calibración oct 2026)
+                    sev = "baja" if tipo in reglas.get("tipos_documento_fisico", []) else "media"
                     senales.append(Senal(
-                        id="ocr.confianza_anomala", familia="ocr", severidad="media", campo=nombre, pagina=p.n, bbox=c.bbox,
+                        id="ocr.confianza_anomala", familia="ocr", severidad=sev, campo=nombre, pagina=p.n, bbox=c.bbox,
                         detalle=f"El OCR lee '{peor.t}' del campo {nombre} con confianza {peor.conf:.2f}, muy por debajo del resto de la página ({media:.2f})",
                         evidencia={"palabra": peor.t, "conf": round(peor.conf, 3), "media_pagina": round(media, 3), "z": round(z, 2)},
                     ))

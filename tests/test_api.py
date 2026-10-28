@@ -11,7 +11,7 @@ def test_flujo_api(cfg_tmp):
     cliente = TestClient(crear_app(cfg_tmp))
     s = cliente.get("/salud").json()
     assert s["estado"] == "ok" and s["motores"]["rapidocr"]
-    assert len(cliente.get("/tipos").json()) == 6
+    assert len(cliente.get("/tipos").json()) == 7  # los 6 del MVP + validacion_emisor (copia del portal de verificación)
     assert "Consola de prueba".lower() in cliente.get("/").text.lower()
 
     ruta = mockup("12794536-5/2-licencia-conducir.pdf")

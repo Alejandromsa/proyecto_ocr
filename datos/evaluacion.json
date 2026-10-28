@@ -8,8 +8,8 @@
     "clasificados": 135,
     "rut_extraido_igual_carpeta": 135,
     "campos_promedio": 6.0,
-    "latencia_p50_s": 2.44,
-    "latencia_p95_s": 3.39
+    "latencia_p50_s": 1.01,
+    "latencia_p95_s": 1.25
   },
   "detalle": [
     {

@@ -39,8 +39,12 @@ def rut_inconsistente(doc: DocTrabajo, campos: dict[str, Campo]) -> list[Senal]:
         for s in p.segmentos:
             for m in RE_RUT.finditer(s.texto):
                 otro = normalizar_rut(m.group(0))
-                if otro and otro != rut.valor_normalizado and 0 < Levenshtein.distance(principal, otro.replace("-", "")) <= 2:
-                    distintos.setdefault(otro, (m.group(0), p, s))
+                if not otro or otro == rut.valor_normalizado or not 0 < Levenshtein.distance(principal, otro.replace("-", "")) <= 2:
+                    continue
+                # todas las apariciones cuentan, también las de DV inválido: en una foto editada la aparición cambiada
+                # queda con el DV roto y el campo toma la original (prueba_alteraciones, oct 2026). Si fue el OCR, la
+                # severidad media y el detalle lo advierten
+                distintos.setdefault(otro, (m.group(0), p, s))
     if not distintos:
         return []
     otro, (texto, p, s) = next(iter(distintos.items()))

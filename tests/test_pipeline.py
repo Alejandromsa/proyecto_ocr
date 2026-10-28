@@ -115,7 +115,11 @@ def test_pdf_escaneado_de_documento_nativo(proc_sin_bd: Procesador, tmp_path):
     img.save(ruta, "PDF", resolution=200)
     d = proc_sin_bd.procesar(ruta, guardar=False, hoy=HOY)
     assert d.archivo.origen == "pdf_escaneado"
-    assert "pdf.solo_imagen" in _ids(d)
+    # escanear o imprimir a PDF un certificado electrónico es habitual entre postulantes (calibración oct 2026: 10 de 133
+    # documentos reales): la señal queda en baja y lo que se pide es el original, con la observación
+    solo = [s for s in d.senales if s.id == "pdf.solo_imagen"]
+    assert solo and solo[0].severidad == "baja"
+    assert any(o.id == "contenido.imagen_de_electronico" and o.accion == "solicitar_original" for o in d.observaciones)
     assert d.campos["folio"].valor_normalizado == "700-168-4102"
 
 
