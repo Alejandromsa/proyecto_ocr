@@ -309,3 +309,46 @@ def test_mismo_archivo_del_mismo_postulante_en_otro_expediente_es_info():
     # página parecida de una plantilla del emisor (certificado): no es evidencia
     dup = Duplicado(tipo="phash_pagina", documento="pagina 1", otro_expediente="cargo-c/post-5", otro_documento="z", distancia=0)
     assert proc._senales_duplicado([dup], d, "certificado_antecedentes", "cargo-a/post-1") == []
+
+
+def test_vigencia_de_documentos_que_vencen():
+    """Cédula, licencia, hoja de vida, antecedentes (60 días desde la emisión) y título con vigencia: el documento informa si está
+    vigente, vencido o sin fecha legible, con la fecha de vencimiento y los días; uno vencido queda Observado."""
+    from datetime import date
+
+    from stracon_ocr.contrato import Clasificacion as Clas
+    from stracon_ocr.observaciones import analizar
+    from stracon_ocr.trabajo import DocTrabajo
+    from stracon_ocr.validacion import validar
+
+    hoy = date(2026, 10, 21)
+
+    def doc(tipo, campos):
+        d = _doc(tipo, campos)
+        d.validaciones = validar(tipo, d.campos, [], REGLAS, hoy)
+        trabajo = DocTrabajo(ruta=Path(d.archivo.nombre), nombre=d.archivo.nombre, datos=b"", sha256="x", mime_real="application/pdf", mime_declarado="application/pdf", origen="pdf_nativo")
+        d.observaciones = analizar(trabajo, Clas(tipo=tipo, confianza=1.0), d.campos, [], d.validaciones, REGLAS)
+        return d
+
+    ced = doc("cedula_identidad", {"rut": "12794536-5", "numero_documento": "100200300", "fecha_vencimiento": "2025-03-01"})
+    assert ced.vigencia["estado"] == "vencido" and ced.vigencia["fecha_vencimiento"] == "2025-03-01" and ced.vigencia["dias"] < 0
+    assert ced.vigencia["regla"] == "vigencia.cedula" and ced.resumen["vencido"] is True
+    assert any(o.id == "contenido.vencido" and o.accion == "solicitar_vigente" and "cédula" in o.mensaje_postulante for o in ced.observaciones)
+    assert ced.resumen["estado"] == "observado"
+
+    lic = doc("licencia_conducir", {"rut": "12794536-5", "fecha_vencimiento": "2027-05-10"})
+    assert lic.vigencia["estado"] == "vigente" and lic.vigencia["dias"] == (date(2027, 5, 10) - hoy).days and lic.resumen["vencido"] is False
+    assert not any(o.id == "contenido.vencido" for o in lic.observaciones)
+
+    sin = doc("licencia_conducir", {"rut": "12794536-5"})
+    assert sin.vigencia["estado"] == "sin_fecha" and sin.vigencia["fecha_vencimiento"] is None
+
+    ant = doc("certificado_antecedentes", {"rut": "12794536-5", "fecha_emision": "2026-07-01"})
+    assert ant.vigencia["estado"] == "vencido" and ant.vigencia["fecha_vencimiento"] == "2026-08-30"
+
+    hvid = doc("hoja_vida_conductor", {"rut": "12794536-5", "folio": "500700000001", "codigo_verificacion": "0A1B2C3D4E5F"})
+    assert hvid.vigencia["estado"] == "no_aplica" and hvid.vigencia["texto"] == "Sin fecha de control en el documento"
+    assert not any(o.id == "contenido.vencido" for o in hvid.observaciones)
+
+    medios = doc("certificado_estudios_medios", {"rut": "12794536-5", "nombre": "ANA"})
+    assert medios.vigencia["estado"] == "no_aplica" and medios.resumen["vencido"] is False

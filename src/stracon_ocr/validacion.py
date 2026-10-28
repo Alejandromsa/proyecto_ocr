@@ -131,21 +131,24 @@ def validar(tipo: str, campos: dict[str, Campo], codigos: list[Codigo], reglas: 
             ok = dias <= maximo
             v.append(Validacion(regla="vigencia.antecedentes", resultado="ok" if ok else "falla", campo="fecha_emision",
                                 detalle=f"Emitido el {emi.isoformat()}, hace {dias} días (máximo {maximo})",
-                                evidencia={"fecha_emision": emi.isoformat(), "hoy": hoy.isoformat(), "dias": dias, "maximo_dias": maximo}))
+                                evidencia={"fecha_emision": emi.isoformat(), "hoy": hoy.isoformat(), "dias": dias, "maximo_dias": maximo,
+                                           "vence": (emi + timedelta(days=maximo)).isoformat()}))
         else:
             v.append(Validacion(regla="vigencia.antecedentes", resultado="no_aplica", campo="fecha_emision", detalle="Sin fecha de emisión"))
-    for t, campo in (("licencia_conducir", "fecha_vencimiento"), ("hoja_vida_conductor", "fecha_control")):
+    # documentos con fecha de vencimiento propia (la hoja de vida trae la fecha de control de la licencia)
+    for t, campo, regla in (("licencia_conducir", "fecha_vencimiento", "vigencia.licencia"), ("hoja_vida_conductor", "fecha_control", "vigencia.licencia"),
+                            ("cedula_identidad", "fecha_vencimiento", "vigencia.cedula")):
         if tipo == t:
             f = _fecha(campos.get(campo))
-            v.append(Validacion(regla="vigencia.licencia", resultado="no_aplica" if f is None else "ok" if f >= hoy else "falla", campo=campo,
+            v.append(Validacion(regla=regla, resultado="no_aplica" if f is None else "ok" if f >= hoy else "falla", campo=campo,
                                 detalle=f"Sin {campo.replace('_', ' ')} legible" if f is None else None if f >= hoy
                                 else f"Vencida el {f.isoformat()} (hace {(hoy - f).days} días)",
-                                evidencia={"fecha": f.isoformat(), "hoy": hoy.isoformat()} if f else {}))
+                                evidencia={"fecha": f.isoformat(), "vence": f.isoformat(), "hoy": hoy.isoformat()} if f else {}))
     if tipo == "certificado_estudios_profesionales" and _fecha(campos.get("vigencia")):
         f = _fecha(campos["vigencia"])
         v.append(Validacion(regla="vigencia.certificado", resultado="ok" if f >= hoy else "falla", campo="vigencia",
                             detalle=None if f >= hoy else f"Vencido el {f.isoformat()} (hace {(hoy - f).days} días)",
-                            evidencia={"vigencia": f.isoformat(), "hoy": hoy.isoformat()}))
+                            evidencia={"vigencia": f.isoformat(), "vence": f.isoformat(), "hoy": hoy.isoformat()}))
 
     for clave, patron in reglas.get("formatos", {}).items():
         t, campo = clave.split(".", 1)

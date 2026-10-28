@@ -109,10 +109,20 @@ Reglas comunes a todo el contrato:
     "severidad_max": "alta", "observaciones": 0, "validaciones_fallidas": 0,
     "estado": "senal_alta",               // senal_alta | senal_media | observado | sin_senales
     "estado_texto": "Señal alta",         // Señal alta | Señal media | Observado | Sin señales (textos del mockup)
-    "requiere_revision": true
+    "requiere_revision": true,
+    "vencido": false                     // true si vigencia.estado = vencido
+  },
+  "vigencia": {                          // calculada con la fecha del análisis; no decide
+    "estado": "vigente",                 // vigente | vencido | sin_fecha (aplica pero no se leyó la fecha) | no_aplica
+    "texto": "Vigente",
+    "fecha_vencimiento": "2027-05-10",    // ISO; antecedentes = emisión + 60 días (reglas.json)
+    "dias": 201,                          // días que quedan (negativo si ya venció)
+    "regla": "vigencia.licencia", "campo": "fecha_vencimiento", "detalle": null
   }
 }
 ```
+
+`vigencia` dice si el documento está vencido: cédula y licencia por su fecha de vencimiento, hoja de vida por «Fecha próximo control» (si no la trae, `no_aplica`), certificado de antecedentes por su antigüedad (`dias_vigencia_antecedentes` de reglas.json) y título profesional si declara vigencia. Un documento vencido trae además la observación `contenido.vencido` (acción `solicitar_vigente`), así que queda **Observado**.
 
 `resumen.estado` resume el documento para el revisor con esta prioridad: **Señal alta > Señal media > Observado > Sin señales**.
 Las señales son indicios de adulteración; las observaciones dicen que el documento **no se puede validar** (foto ilegible,

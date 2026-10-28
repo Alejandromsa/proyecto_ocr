@@ -130,6 +130,8 @@ def de_contenido(doc: DocTrabajo, clas: Clasificacion, campos: dict[str, Campo],
                            "reciente y su licencia vigente.")
             elif v.regla == "vigencia.licencia":
                 mensaje = "Su licencia de conducir figura vencida. Por favor envíe su licencia vigente (frente y reverso)."
+            elif v.regla == "vigencia.cedula":
+                mensaje = "Su cédula de identidad figura vencida. Por favor envíe su cédula vigente (frente y reverso)."
             else:
                 mensaje = f"Su {nombre.lower()} figura vencido. Por favor envíe un certificado vigente."
             obs.append(Observacion(

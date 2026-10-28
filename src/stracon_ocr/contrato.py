@@ -1,7 +1,7 @@
 """Contrato JSON v1.0 (ver docs/contrato-json.md). Todo documento procesado se valida con estos modelos."""
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, computed_field
@@ -197,7 +197,32 @@ class Documento(BaseModel):
             "estado_texto": ESTADOS_TEXTO[estado],
             "requiere_revision": bool(por_sev["alta"] or por_sev["media"] or self.observaciones)
             or any(v.resultado == "falla" for v in self.validaciones),
+            "vencido": self.vigencia["estado"] == "vencido",
         }
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def vigencia(self) -> dict[str, Any]:
+        """Vigencia del documento según las reglas `vigencia.*` (calculada al analizar, con la fecha de ese día).
+        estado: vigente | vencido | sin_fecha (aplica pero no se leyó la fecha) | no_aplica (el tipo no vence).
+        Un documento vencido además queda «Observado» con la observación contenido.vencido."""
+        v = next((x for x in self.validaciones if x.regla.startswith("vigencia.")), None)
+        if v is None:
+            return {"estado": "no_aplica", "texto": "No aplica", "fecha_vencimiento": None, "dias": None, "regla": None,
+                    "campo": None, "detalle": None}
+        estado = {"falla": "vencido", "ok": "vigente"}.get(v.resultado, "sin_fecha")
+        if estado == "sin_fecha" and v.campo == "fecha_control":
+            # la hoja de vida solo trae «Fecha próximo control» en algunos casos: si no está, el documento no vence por esa vía
+            return {"estado": "no_aplica", "texto": "Sin fecha de control en el documento", "fecha_vencimiento": None, "dias": None,
+                    "regla": v.regla, "campo": v.campo, "detalle": v.detalle}
+        vence, hoy = v.evidencia.get("vence"), v.evidencia.get("hoy")
+        try:
+            dias = (date.fromisoformat(vence) - date.fromisoformat(hoy)).days if vence and hoy else None
+        except ValueError:
+            dias = None
+        texto = {"vigente": "Vigente", "vencido": "Vencido", "sin_fecha": "Sin fecha de vencimiento legible"}[estado]
+        return {"estado": estado, "texto": texto, "fecha_vencimiento": vence if estado != "sin_fecha" else None, "dias": dias,
+                "regla": v.regla, "campo": v.campo, "detalle": v.detalle}
 
 
 # --- Expediente ---------------------------------------------------------------------------------

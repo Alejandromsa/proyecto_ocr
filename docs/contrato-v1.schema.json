@@ -954,6 +954,13 @@
         "readOnly": true,
         "title": "Resumen",
         "type": "object"
+      },
+      "vigencia": {
+        "additionalProperties": true,
+        "description": "Vigencia del documento según las reglas `vigencia.*` (calculada al analizar, con la fecha de ese día).\nestado: vigente | vencido | sin_fecha (aplica pero no se leyó la fecha) | no_aplica (el tipo no vence).\nUn documento vencido además queda «Observado» con la observación contenido.vencido.",
+        "readOnly": true,
+        "title": "Vigencia",
+        "type": "object"
       }
     },
     "required": [
@@ -961,7 +968,8 @@
       "archivo",
       "versiones",
       "procesado_en",
-      "resumen"
+      "resumen",
+      "vigencia"
     ],
     "title": "Documento",
     "type": "object"
