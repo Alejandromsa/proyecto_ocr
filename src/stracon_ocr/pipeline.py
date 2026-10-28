@@ -4,6 +4,7 @@ Cada etapa registra su error sin romper el resto: el JSON sale siempre válido, 
 """
 from __future__ import annotations
 
+import dataclasses
 import importlib.metadata as md
 import json
 import logging
@@ -101,6 +102,7 @@ class Procesador:
         else:
             clas = self._etapa(doc, "clasificacion", clasificar, doc) or Clasificacion()
         campos = self._etapa(doc, "extraccion", extraccion.extraer, doc, clas.tipo) or {}
+        doc, cods, clas, campos = self._reintentar_mayor_dpi(doc, motor, usados, tipo, cods, clas, campos)
         modelo_llm = None
         if self.cfg.ollama_modelo and clas.tipo in TIPOS:
             faltan = [c for c in TIPOS[clas.tipo].campos if c.nombre not in campos]
@@ -146,6 +148,38 @@ class Procesador:
             self.repo.guardar_archivo(doc.sha256, doc.datos)
             self.repo.guardar_documento(documento, doc.texto, phashes)
         return documento
+
+    def _reintentar_mayor_dpi(self, doc: DocTrabajo, motor: str, usados: dict[str, str], tipo: str | None,
+                              cods, clas: Clasificacion, campos):
+        """PDF escaneado de un tipo conocido al que le faltan campos obligatorios: se vuelve a leer a mayor resolución.
+        A 200 DPI el OCR puede perder líneas completas (en un certificado del Mineduc, la que trae el nombre); a 400 DPI las
+        lee. Se conserva la lectura nueva solo si deja menos campos obligatorios sin leer; si algo falla, la original."""
+        spec = TIPOS.get(clas.tipo)
+        destino = self.cfg.dpi_reintento
+        if not spec or doc.origen != "pdf_escaneado" or destino <= self.cfg.dpi:
+            return doc, cods, clas, campos
+        faltan = [c for c in spec.obligatorios if c not in campos]
+        if not faltan:
+            return doc, cods, clas, campos
+        t0 = time.perf_counter()
+        try:
+            cfg2 = dataclasses.replace(self.cfg, dpi=destino)
+            doc2 = ingesta.cargar(Path(doc.nombre), cfg2, datos=doc.datos, nombre=doc.nombre)
+            self._parsear(doc2, motor, usados)
+            cods2 = codigos.leer_codigos(doc2) or []
+            clas2 = Clasificacion(tipo=tipo, confianza=1.0, metodo="manual") if tipo and tipo in TIPOS else clasificar(doc2)
+            campos2 = extraccion.extraer(doc2, clas2.tipo) or {}
+        except Exception as e:  # el reintento nunca debe tumbar un documento que ya tenía lectura
+            log.warning("Reintento a %s DPI falló en %s: %s", destino, doc.nombre, type(e).__name__)
+            return doc, cods, clas, campos
+        spec2 = TIPOS.get(clas2.tipo)
+        faltan2 = [c for c in (spec2.obligatorios if spec2 else ()) if c not in campos2]
+        if clas2.tipo != clas.tipo or len(faltan2) >= len(faltan):
+            return doc, cods, clas, campos
+        doc2.tiempos = {k: doc.tiempos.get(k, 0) + doc2.tiempos.get(k, 0) for k in set(doc.tiempos) | set(doc2.tiempos)}
+        doc2.tiempos["reintento_dpi"] = int((time.perf_counter() - t0) * 1000)
+        doc2.errores = doc.errores + [e for e in doc2.errores if e not in doc.errores]
+        return doc2, cods2, clas2, campos2
 
     def _etapa(self, doc: DocTrabajo, nombre: str, fn, *args):
         t = time.perf_counter()

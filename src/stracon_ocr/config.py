@@ -19,6 +19,9 @@ class Config:
     db: Path = field(default_factory=lambda: Path(os.environ.get("SOCR_DB", "datos/stracon-ocr.db")))
     # Resolución a la que se renderizan las páginas para OCR y forense visual
     dpi: int = field(default_factory=lambda: int(os.environ.get("SOCR_DPI", "200")))
+    # Resolución del reintento cuando un PDF escaneado de un tipo conocido sale sin campos obligatorios (0 = sin reintento).
+    # A 200 DPI el OCR puede perder líneas enteras (p. ej. el nombre de un certificado del Mineduc); a 400 DPI las lee.
+    dpi_reintento: int = field(default_factory=lambda: int(os.environ.get("SOCR_DPI_REINTENTO", "400")))
     # Motor OCR principal: rapidocr | tesseract | azure
     motor: str = field(default_factory=lambda: os.environ.get("SOCR_MOTOR", "rapidocr"))
     # En PDF nativo, OCR del render para comparar texto declarado vs visible

@@ -123,6 +123,36 @@ def test_pdf_escaneado_de_documento_nativo(proc_sin_bd: Procesador, tmp_path):
     assert d.campos["folio"].valor_normalizado == "700-168-4102"
 
 
+def test_reintento_a_mayor_dpi_cuando_faltan_campos_obligatorios(proc_sin_bd: Procesador, tmp_path, monkeypatch):
+    """A baja resolución el OCR puede perder una línea (p. ej. el folio): el PDF escaneado se vuelve a leer a más DPI."""
+    import pypdfium2 as pdfium
+    from stracon_ocr import pipeline
+
+    img = pdfium.PdfDocument(str(mockup(LIMPIO)))[0].render(scale=200 / 72).to_pil().convert("RGB")
+    ruta = tmp_path / "escaneado.pdf"
+    img.save(ruta, "PDF", resolution=200)
+    original = pipeline.extraccion.extraer
+
+    def extraer_ciego(doc, tipo):  # simula un OCR que a baja resolución no lee el folio
+        campos = original(doc, tipo)
+        if doc.paginas and doc.paginas[0].imagen.width < 2000:
+            campos.pop("folio", None)
+        return campos
+
+    monkeypatch.setattr(pipeline.extraccion, "extraer", extraer_ciego)
+    d = proc_sin_bd.procesar(ruta, guardar=False, hoy=HOY)
+    assert "folio" in d.campos and "reintento_dpi" in d.tiempos_ms
+    assert not any(o.id == "contenido.campos_faltantes" for o in d.observaciones)
+    # sin reintento (SOCR_DPI_REINTENTO=0) se conserva la lectura original y se pide el dato faltante
+    proc_sin_bd.cfg.dpi_reintento = 0
+    try:
+        d0 = proc_sin_bd.procesar(ruta, guardar=False, hoy=HOY)
+    finally:
+        proc_sin_bd.cfg.dpi_reintento = 400
+    assert "folio" not in d0.campos and "reintento_dpi" not in d0.tiempos_ms
+    assert any(o.id == "contenido.campos_faltantes" for o in d0.observaciones)
+
+
 def test_word_con_cambios_rastreados(proc_sin_bd: Procesador, tmp_path):
     from docx import Document as Docx
 

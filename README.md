@@ -81,6 +81,7 @@ se guarda ni se escribe en logs, JSON ni mensajes de error. Contrato y reglas en
 |---|---|---|
 | `SOCR_DB` | `datos/stracon-ocr.db` | Base SQLite (los originales quedan en `datos/archivos/`) |
 | `SOCR_DPI` | `200` | Resolución de render para OCR y forense visual |
+| `SOCR_DPI_REINTENTO` | `400` | Resolución del reintento cuando un PDF escaneado de un tipo conocido sale sin campos obligatorios (p. ej. el nombre); se conserva la lectura nueva solo si mejora. `0` = sin reintento |
 | `SOCR_MOTOR` | `rapidocr` | `rapidocr`, `tesseract` o `azure` |
 | `SOCR_COMPARAR_OCR` | `1` | En PDF nativo, OCR del render para comparar |
 | `SOCR_SEGUNDO_MOTOR` | `1` | Tesseract en páginas OCR, si está instalado |
