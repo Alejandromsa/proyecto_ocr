@@ -158,6 +158,23 @@ def _ubicar(doc: DocTrabajo, valor: str) -> tuple[Segmento | None, PaginaTrabajo
         for s in p.segmentos:
             if clave and clave in sin_espacios(s.norm):
                 return s, p
+    return _ubicar_palabras(doc, valor)
+
+
+def _ubicar_palabras(doc: DocTrabajo, valor: str) -> tuple[Segmento | None, PaginaTrabajo | None]:
+    """Valor que se parte en dos líneas del documento (un nombre largo): se buscan sus palabras consecutivas aunque estén en
+    segmentos distintos. La caja es la unión de esas palabras, así que abarca las dos líneas."""
+    def ficha(texto: str) -> str:
+        return sin_tildes(texto).upper().strip(",.;:()")
+    fichas = [f for f in (ficha(t) for t in valor.split()) if f]
+    if len(fichas) < 2:
+        return None, None
+    for p in doc.paginas:
+        palabras = [w for s in p.segmentos for w in s.palabras]
+        normas = [ficha(w.t) for w in palabras]
+        for i in range(len(palabras) - len(fichas) + 1):
+            if normas[i:i + len(fichas)] == fichas:
+                return Segmento(palabras[i:i + len(fichas)], p.n), p
     return None, None
 
 
@@ -278,7 +295,7 @@ def por_patron(doc: DocTrabajo, spec: CampoSpec, tipo: TipoSpec) -> Campo | None
                 bruto = lineas[m.start(1):m.end(1)].split("\n")[0]
             valor = _sin_repeticion(re.sub(r"\s+", " ", bruto.strip(" ,.:")))
             seg, pag = _ubicar(doc, valor)
-            return _campo(spec, tipo, seg if seg and seg.texto != valor else None, valor, "regex", "frase", m.group(0)[:160], pag)
+            return _campo(spec, tipo, seg, valor, "regex", "frase", m.group(0)[:160], pag)
     return None
 
 

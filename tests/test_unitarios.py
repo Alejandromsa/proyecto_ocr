@@ -153,3 +153,17 @@ def test_agrupar_columnas():
     palabras = [Pal("NOMBRE", (57, 222, 90, 230)), Pal("RUT", (315, 222, 330, 230)), Pal("Juan", (57, 234, 80, 246)), Pal("Pérez", (84, 234, 115, 246))]
     segs = agrupar(palabras, 1)
     assert [s.texto for s in segs] == ["NOMBRE", "RUT", "Juan Pérez"]
+
+
+def test_ubicar_valor_partido_en_dos_lineas():
+    """Un nombre largo que ocupa dos líneas del documento se ubica con una caja que abarca ambas."""
+    from types import SimpleNamespace
+
+    from stracon_ocr.extraccion import _ubicar
+
+    palabras = [Pal("don(ña)", (72, 300, 110, 312)), Pal("JUAN", (115, 300, 150, 312)),
+                Pal("HUGO", (72, 320, 110, 332)), Pal("TAPIA", (115, 320, 160, 332)), Pal("BABAROVICH,", (165, 320, 250, 332))]
+    pagina = SimpleNamespace(n=1, segmentos=agrupar(palabras, 1))
+    seg, pag = _ubicar(SimpleNamespace(paginas=[pagina]), "JUAN HUGO TAPIA BABAROVICH")
+    assert pag is pagina and seg.bbox == (72, 300, 250, 332)
+    assert _ubicar(SimpleNamespace(paginas=[pagina]), "PEDRO LUIS DIAZ") == (None, None)
